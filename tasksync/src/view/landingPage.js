@@ -1,8 +1,10 @@
+// src/view/landingPage.js
 import React, { useEffect } from 'react';
 import hands from '../assets/handstogether.jpg';
 import { Presenter } from '../presenter';
+import './landingPage.css';
 
-function LandingPage() {
+function LandingPage({ onNavigate }) {
   useEffect(() => {
     const presenter = new Presenter({
       render: (data) => {
@@ -12,11 +14,12 @@ function LandingPage() {
         buttons.forEach((button, index) => {
           button.className = data.buttons[index].className;
           button.textContent = data.buttons[index].text;
+          button.onclick = onNavigate;
         });
       }
     });
     presenter.initialize();
-  }, []);
+  }, [onNavigate]);
 
   return (
     <div className="landing-page">
@@ -24,8 +27,8 @@ function LandingPage() {
         <img src={hands} alt="Hands Together" className="landing-image" />
       </div>
       <div className="content">
-      <h1>Loading...</h1>
-      <p>Loading description...</p>
+        <h1>Loading...</h1>
+        <p>Loading description...</p>
         <div className="buttons">
           <button></button>
           <button></button>
