@@ -9,7 +9,7 @@ async function connectToDatabase() {
   try {
     await client.connect();
     console.log('Connected to MongoDB');
-    return client.db('your-database-name'); // Replace with your database name
+    return client.db('Scheduler'); 
   } catch (err) {
     console.error(err);
   }
