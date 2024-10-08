@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient} = require('mongodb');
 
 // Replace the following with your MongoDB connection string.
 const uri = "mongodb+srv://jasona2:8Ea0i9A1OqbvQ1ZR@schedulercluster.gowe7.mongodb.net/?retryWrites=true&w=majority&appName=SchedulerCluster";;
