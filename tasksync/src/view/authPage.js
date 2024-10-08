@@ -32,7 +32,6 @@ function AuthPage() {
         password: formData.password
       });
       console.log('User registered:', response.data);
-      // Optionally, redirect to login page or show success message
     } catch (error) {
       console.error('Error registering user:', error);
     }
