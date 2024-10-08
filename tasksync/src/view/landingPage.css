@@ -18,7 +18,8 @@
   }
   
   .landing-image {
-    max-width: 100%;
+    
+    max-width: 190%;
     height: auto;
     border-radius: 40px;
   }

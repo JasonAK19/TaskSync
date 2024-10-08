@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import workingTogether from '../assets/workingtogether.jpg';
 import './authPage.css';
 
 function AuthPage() {
@@ -39,13 +40,8 @@ function AuthPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-options">
-        <button onClick={() => setShowSignUp(false)} className={!showSignUp ? 'active' : ''}>
-          Log In
-        </button>
-        <button onClick={() => setShowSignUp(true)} className={showSignUp ? 'active' : ''}>
-          Sign Up
-        </button>
+      <div className = "authImageContainer">
+      <img src={workingTogether} alt="Hands Together" className="authImage" />
       </div>
 
       <div className="auth-form">
@@ -106,6 +102,16 @@ function AuthPage() {
             </form>
           </div>
         )}
+
+<div className="auth-options">
+        <button onClick={() => setShowSignUp(false)} className={!showSignUp ? 'active' : ''}>
+          Log In
+        </button>
+        <button onClick={() => setShowSignUp(true)} className={showSignUp ? 'active' : ''}>
+          Sign Up
+        </button>
+      </div>
+      
       </div>
     </div>
   );
