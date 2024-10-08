@@ -25,11 +25,11 @@ app.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await db.collection('users').insertOne({
-      username,
+    const result = await db.collection('User').insertOne({
       email,
+      username,
       password: hashedPassword,
-      created_at: new Date()
+      regristrationDate: new Date()
     });
     res.status(201).json({ _id: result.insertedId });
   } catch (err) {

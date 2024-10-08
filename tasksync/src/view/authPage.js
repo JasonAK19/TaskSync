@@ -1,9 +1,42 @@
-// src/view/AuthPage.js
 import React, { useState } from 'react';
+import axios from 'axios';
 import './authPage.css';
 
 function AuthPage() {
   const [showSignUp, setShowSignUp] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    username: '',
+    password: '',
+    confirmPassword: ''
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleSignUpSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+    try {
+      const response = await axios.post('/register', {
+        email: formData.email,
+        username: formData.username,
+        password: formData.password
+      });
+      console.log('User registered:', response.data);
+      // Optionally, redirect to login page or show success message
+    } catch (error) {
+      console.error('Error registering user:', error);
+    }
+  };
 
   return (
     <div className="auth-page">
@@ -20,15 +53,42 @@ function AuthPage() {
         {showSignUp ? (
           <div className="sign-up-form">
             <h2>Sign Up</h2>
-            <form>
+            <form onSubmit={handleSignUpSubmit}>
+              <label>Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
+              
               <label>Username</label>
-              <input type="text" name="username" required />
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
 
               <label>Password</label>
-              <input type="password" name="password" required />
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
 
               <label>Confirm Password</label>
-              <input type="password" name="confirm-password" required />
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
 
               <button type="submit">Sign Up</button>
             </form>
