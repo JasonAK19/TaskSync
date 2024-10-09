@@ -4,7 +4,7 @@
     position: fixed; 
     top: 0;
     left: 0;
-    background-color: #CAC4D0; 
+    background-color: #333; 
     color: white;
     display: flex;
     flex-direction: column;
@@ -18,9 +18,8 @@
   }
   
   .menu-item {
-    background-color: #ECE6F0; 
-    color: #615382; 
-    border-radius: 12px;
+    background-color: #444; 
+    color: white; 
     border: none;
     padding: 10px;
     margin: 5px 0;
@@ -33,11 +32,17 @@
   }
   
   .menu-item:hover {
-    background-color: #4e416b;
-    color: white;
+    background-color: #555; 
+  }
+  
+  .bottom-menu .menu-item {
+    background-color: #615382;
   }
   
   .bottom-menu .menu-item i {
     color: white;
   }
   
+  .bottom-menu .menu-item:hover {
+    background-color: #4e416b;
+  }
