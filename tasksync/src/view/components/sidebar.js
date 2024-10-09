@@ -1,9 +1,14 @@
 import React from 'react';
+import profilepic from '../../assets/defualtpf.jpg';
 import './sidebar.css';
 
 const Sidebar = () => {
   return (
     <div className="Sidebar">
+        <div className="profile-section">
+        <img src={profilepic} alt="Profile" className="profile-picture" />
+        <span className="username">Username</span>
+      </div>
       <div className="menu">
         <button className="menu-item">
           <i className="fa fa-calendar"></i> Open Full Calendar
@@ -18,7 +23,7 @@ const Sidebar = () => {
 
       <div className="bottom-menu">
         <button className="menu-item">
-          <i className="fa fa-cog"></i> Settings
+          <i className="fa fa-cog"></i>Settings
         </button>
         <button className="menu-item">Sign Out</button>
       </div>

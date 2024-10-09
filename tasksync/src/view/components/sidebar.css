@@ -4,27 +4,63 @@
     position: fixed; 
     top: 0;
     left: 0;
-    background-color: #333; 
+    background-color: #CAC4D0; 
     color: white;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: 10px;
   }
+
+  .profile-section {
+    display: flex;
+    align-items: center;
+    background-color: #ECE6F0; 
+    padding: 10px;
+    margin-bottom: 10px; 
+    border-radius: 20px;
+  }
   
-  .menu, .bottom-menu {
+  .profile-picture {
+    width: 40px; 
+    height: 40px; 
+    border-radius: 50%; 
+    margin-right: 20px; 
+    margin-left: 10px;
+  }
+  
+  .username {
+    font-size: 18px; 
+    color: #615382; 
+    font-weight: bold;
+
+  }
+  
+  
+  .menu{
+    /* This part is so dumb but i was too lazy to find a different solution 
+    to put it in the same position */
+    margin-top: -320px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bottom-menu{
+    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
   }
   
   .menu-item {
-    background-color: #444; 
-    color: white; 
+    background-color: #ECE6F0; 
+    color: #615382; 
+    border-radius: 12px;
     border: none;
     padding: 10px;
     margin: 5px 0;
     text-align: left;
     cursor: pointer;
+    
   }
   
   .menu-item i {
@@ -32,17 +68,11 @@
   }
   
   .menu-item:hover {
-    background-color: #555; 
-  }
-  
-  .bottom-menu .menu-item {
-    background-color: #615382;
+    background-color: #4e416b;
+    color: white;
   }
   
   .bottom-menu .menu-item i {
     color: white;
   }
   
-  .bottom-menu .menu-item:hover {
-    background-color: #4e416b;
-  }
