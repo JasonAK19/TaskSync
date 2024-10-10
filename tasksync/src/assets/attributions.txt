@@ -4,3 +4,4 @@ merge, flaticon : <a href="https://www.flaticon.com/free-icons/merge" title="mer
 handshake, flaticon : <a href="https://www.flaticon.com/free-icons/acquisition" title="acquisition icons">Acquisition icons created by HAJICON - Flaticon</a>
 userSettings, flaticon : <a href="https://www.flaticon.com/free-icons/profile" title="profile icons">Profile icons created by Pixel perfect - Flaticon</a>
 settings, flaticon : <a href="https://www.flaticon.com/free-icons/settings" title="settings icons">Settings icons created by Pixel perfect - Flaticon</a>
+signout, flaticon : <a href="https://www.flaticon.com/free-icons/signout" title="signout icons">Signout icons created by GelsoDesigns - Flaticon</a>
