@@ -14,7 +14,7 @@ const Sidebar = () => {
 
       <div className="menu">
         <button className="menu-item">
-            <img src={images['calendar.png']} alt="calendar" className="menu-icon" />  Open Full Calendar </button>
+            <img src={images['calendar.png']} alt="calendar" className="menu-icon" />  Full Calendar </button>
 
         <button className="menu-item">
             <img src={images['memo.png']} alt="task" className="menu-icon" /> Create Event </button>
