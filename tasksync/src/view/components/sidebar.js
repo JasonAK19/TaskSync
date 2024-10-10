@@ -1,19 +1,21 @@
 import React from 'react';
-import profilepic from '../../assets/defualtpf.jpg';
+import images from '../../assets';
 import './sidebar.css';
 
 const Sidebar = () => {
   return (
     <div className="Sidebar">
         <div className="profile-section">
-        <img src={profilepic} alt="Profile" className="profile-picture" />
+        <img src={images['defualtpf.jpg']} alt="Profile" className="profile-picture" />
         <span className="username">Username</span>
       </div>
       <div className="menu">
         <button className="menu-item">
+            <img src={images['calendar.png']} alt="calendar" className="menu-icon" />
           <i className="fa fa-calendar"></i> Open Full Calendar
         </button>
         <button className="menu-item">
+            <img src={images['memo.png']} alt="task" className="menu-icon" />
           <i className="fa fa-plus"></i> Create Event
         </button>
         <button className="menu-item">

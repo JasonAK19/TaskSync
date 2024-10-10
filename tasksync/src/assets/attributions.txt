@@ -1,0 +1,6 @@
+calendar, flaticon : <a href="https://www.flaticon.com/free-icons/calendar" title="calendar icons">Calendar icons created by Freepik - Flaticon</a>
+memo, flaticon : <a href="https://www.flaticon.com/free-icons/memo-pad" title="memo pad icons">Memo pad icons created by yaicon - Flaticon</a>
+merge, flaticon : <a href="https://www.flaticon.com/free-icons/merge" title="merge icons">Merge icons created by Freepik - Flaticon</a>
+handshake, flaticon : <a href="https://www.flaticon.com/free-icons/acquisition" title="acquisition icons">Acquisition icons created by HAJICON - Flaticon</a>
+userSettings, flaticon : <a href="https://www.flaticon.com/free-icons/profile" title="profile icons">Profile icons created by Pixel perfect - Flaticon</a>
+settings, flaticon : <a href="https://www.flaticon.com/free-icons/settings" title="settings icons">Settings icons created by Pixel perfect - Flaticon</a>
