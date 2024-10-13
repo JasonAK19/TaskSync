@@ -1,0 +1,39 @@
+/* General Header Styling */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E0E0E0;
+  }
+  
+  .header-title h1 {
+    font-size: 32px;
+    font-weight: bold;
+    color: #000000;
+    margin: 0;
+  }
+  
+  /* Navigation Styling */
+  .header-nav .nav-links {
+    display: flex;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .header-nav .nav-links li {
+    margin-left: 20px;
+  }
+  
+  .header-nav .nav-links li a {
+    text-decoration: none;
+    color: #000000;
+    font-size: 16px;
+  }
+  
+  .header-nav .nav-links li a:hover {
+    color: #615382; 
+  }
+  
