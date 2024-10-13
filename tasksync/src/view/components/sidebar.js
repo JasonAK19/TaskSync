@@ -11,7 +11,7 @@ const Sidebar = ({ userInfo }) => {
     <div className="Sidebar">
       <div className="profile-section">
         <img src={images['defualtpf.jpg']} alt="Profile" className="profile-picture" />
-        <span className="username">{userInfo.username}</span>
+        <span className="username">{userInfo?.username}</span>
       </div>
 
       <button className="edit-profile-btn">Edit profile</button>

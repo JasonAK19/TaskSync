@@ -29,7 +29,7 @@ app.post('/register', async (req, res) => {
       email,
       username,
       password: hashedPassword,
-      regristrationDate: new Date()
+      registrationDate: new Date()
     });
     res.status(201).json({ _id: result.insertedId });
   } catch (err) {
@@ -54,9 +54,10 @@ app.post('/login', async (req, res) => {
       console.log('Invalid credentials');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
     const { password: _, ...userInfo } = user;
 
-    res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ message: 'Login successful', user: userInfo });
   } catch (err) {
     res.status(500).json({ error: 'Failed to login user' });
   }
@@ -66,7 +67,7 @@ app.post('/login', async (req, res) => {
 app.get('/user/:username', async (req, res) => {
   try {
     const { username } = req.params;
-    const user = await db.collection('users').findOne({ username }, { projection: { _id: 0, username: 1, email: 1 } });
+    const user = await db.collection('User').findOne({ username }, { projection: { _id: 0, username: 1, email: 1 } });
     if (user) {
       res.status(200).json(user);
     } else {
