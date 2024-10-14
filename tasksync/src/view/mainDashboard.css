@@ -81,10 +81,31 @@
     background-color: #CAC4D0;
   }
   
+  .main-dashboard .add-task-button {
+    position: absolute;
+    top: -75px;
+    right: 240px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+  }
+  
+  .main-dashboard .add-task-button button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .main-dashboard .add-task-button img {
+    width: 40px;
+    height: 40px;
+  }
+  
   /* Task list section */
   .main-dashboard .task-list-section {
     position: absolute;
-    top: 200px; 
+    top: 240px; 
     left: -150px; 
     right: 0;
     margin-top: 20px;

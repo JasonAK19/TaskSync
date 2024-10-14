@@ -40,6 +40,26 @@ const MainDashboard = ({ username }) => {
       <div className="main-content">
         <Header />
         <div className="content">
+          {/* Task List Section */}
+          <section className="task-list-section">
+            <div className="task">
+              <div className="task-icon"></div>
+              <div className="task-details">
+                <h4>No Tasks Yet</h4>
+                <p>Select the plus icon to add a task</p>
+              </div>
+              <div className="task-options">
+                <button className="task-menu">...</button>
+              </div>
+            </div>
+            {/* Add Task Button - Moved Here */}
+            <div className="add-task-button">
+              <button>
+                <img src={images['plus.png']} alt="Add Task" />
+              </button>
+            </div>
+          </section>
+
           {/* Friends Section */}
           <section className="friends-section">
             <h3>Friends</h3>
@@ -64,21 +84,6 @@ const MainDashboard = ({ username }) => {
               <button className="add-new">Add New</button>
               <button className="show-all">Show All</button>
             </div>
-          </section>
-
-          {/* Task List Section */}
-          <section className="task-list-section">
-            <div className="task">
-              <div className="task-icon"></div>
-              <div className="task-details">
-                <h4>No Tasks Yet</h4>
-                <p>Select the plus icon to add a task</p>
-              </div>
-              <div className="task-options">
-                <button className="task-menu">...</button>
-              </div>
-            </div>
-            {/* Repeat for more tasks */}
           </section>
         </div>
       </div>
