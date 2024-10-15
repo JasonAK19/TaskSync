@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
@@ -11,7 +10,6 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [userInfo, setUserInfo] = useState(null);
-
 
   const navigateToAuth = () => {
     setCurrentPage('auth');
@@ -29,7 +27,6 @@ function App() {
     }
   };
 
-
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentPage('landing');
@@ -39,7 +36,9 @@ function App() {
     <div className="App">
       {currentPage === 'landing' && <LandingPage onNavigate={navigateToAuth} />}
       {currentPage === 'auth' && <AuthPage onLogin={handleLogin} />}
-      {currentPage === 'dashboard' && isAuthenticated && <Dashboard username={username} userInfo={userInfo} onLogout={handleLogout} />}
+      {currentPage === 'dashboard' && isAuthenticated && (
+        <Dashboard username={username} userInfo={userInfo} onLogout={handleLogout} />
+      )}
     </div>
   );
 }

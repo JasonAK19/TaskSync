@@ -40,7 +40,7 @@ const fetchFriends = async (username) => {
   }
 };
 
-const MainDashboard = ({ username }) => {
+const MainDashboard = ({ username, onLogout }) => {
   const [userInfo, setUserInfo] = useState({ username: '', email: '' });
   const [tasks, setTasks] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -79,7 +79,7 @@ const MainDashboard = ({ username }) => {
 
   return (
     <div className="main-dashboard">
-      <Sidebar userInfo={userInfo} />
+      <Sidebar userInfo={userInfo} onLogout={onLogout} />
       <div className="main-content">
         <Header />
         <div className="content">

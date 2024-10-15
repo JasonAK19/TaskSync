@@ -4,7 +4,7 @@ import './sidebar.css';
 
 
 
-const Sidebar = ({ userInfo }) => {
+const Sidebar = ({ userInfo, onLogout }) => {
   console.log('Sidebar User Info:', userInfo);
 
   return (
@@ -34,7 +34,7 @@ const Sidebar = ({ userInfo }) => {
         <button className="menu-item">
           <img src={images['setting.png']} alt="settings" className="menu-icon" /> Settings
         </button>
-        <button className="menu-item">
+        <button className="menu-item" onClick={onLogout}>
           <img src={images['signout.png']} alt="logout" className="menu-icon" />
           Sign Out
         </button>
