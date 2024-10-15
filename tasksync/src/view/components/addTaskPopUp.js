@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import "./addTaskPopUp.css"; // Updated CSS file name
+import "./addTaskPopUp.css"; 
 
-const AddTaskPopUp = ({ isOpen, closeModal }) => {
+const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [taskTime, setTaskTime] = useState("12:30");
@@ -9,13 +9,26 @@ const AddTaskPopUp = ({ isOpen, closeModal }) => {
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleSave = () => {
-    console.log("Task saved:", { taskTitle, taskDescription, taskTime, taskDate });
-    closeModal(); 
+    const task = {
+      title: taskTitle,
+      description: taskDescription,
+      time: taskTime,
+      date: taskDate,
+    };
+    onSave(task);
+    setTaskTitle("");
+    setTaskDescription("");
+    setTaskTime("12:30");
+    setTaskDate("2024-10-14");
   };
 
   const handleTimeChange = (time) => {
     setTaskTime(time);
     setShowTimePicker(false);
+  };
+
+  const toggleTimePicker = () => {
+    setShowTimePicker(prevState => !prevState);
   };
 
   if (!isOpen) return null; 
@@ -40,12 +53,15 @@ const AddTaskPopUp = ({ isOpen, closeModal }) => {
               value={taskDate}
               onChange={(e) => setTaskDate(e.target.value)}
             />
-            <input
-              type="text"
-              value={taskTime}
-              onClick={() => setShowTimePicker(true)}
-              readOnly
-            />
+            <div className="time-input-container">
+              <input
+                type="text"
+                value={taskTime}
+                onClick={toggleTimePicker}
+                readOnly
+              />
+              <span className="clock-icon" onClick={toggleTimePicker}>🕒</span>
+            </div>
             {showTimePicker && (
               <div className="time-picker">
                 {Array.from({ length: 24 }, (_, hour) =>

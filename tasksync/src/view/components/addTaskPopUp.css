@@ -50,35 +50,49 @@
   
   /* Date and time input styling */
   .date-time {
-    position: relative; 
+    display: flex;
+    align-items: center;
     margin-top: 10px; 
   }
   
-  .date-time input[type="date"] {
-    height: 15px;
+  .date-time input[type="date"],
+  .date-time input[type="text"] {
+    height: 30px;
     border-radius: 5px; 
     margin-right: 10px; 
     margin-bottom: 10px;
+    padding: 5px 10px;
+    border: 1px solid #CCC;
+    background-color: #F2F0F7;
   }
   
-  .date-time input[type="text"] {
-    height: 15px;
-    border-radius: 5px; 
-    margin-left: 10px; 
-    margin-bottom: 10px;
+  .time-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .time-input-container input[type="text"] {
+    padding-right: 30px; /* Add padding to make space for the clock icon */
+  }
+  
+  .clock-icon {
+    position: absolute;
+    right: 10px;
     cursor: pointer;
+    margin-bottom: 10px;
   }
   
   /* Time picker styling */
   .time-picker {
     position: absolute;
-    top: 20px; 
-    left: 180px; 
+    top: 425px; 
+    left: 700px; 
     background-color: #FFFFFF;
     border: 1px solid #CCC;
     border-radius: 5px;
     max-height: 200px; 
-    overflow-y: auto;
+    overflow-y: auto; 
     width: 100px; 
     z-index: 2;
   }
@@ -100,10 +114,6 @@
     border-radius: 5px;
     margin-top: 10px;
     background-color: #F2F0F7;
-  }
-  
-  .task-list-dropdown {
-    margin-top: 15px;
   }
   
   .task-list-dropdown select {

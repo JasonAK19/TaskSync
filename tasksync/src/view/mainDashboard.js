@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from './components/sidebar';
 import Header from './components/header';
+import AddTaskPopUp from './components/addTaskPopUp';
+import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
 
@@ -11,7 +13,6 @@ const fetchUserInfo = async (username) => {
       throw new Error('Failed to fetch user information');
     }
     const user = await response.json();
-    console.log('Fetched User:', user); 
     return user;
   } catch (err) {
     console.error(err);
@@ -19,20 +20,62 @@ const fetchUserInfo = async (username) => {
   }
 };
 
+const fetchTasks = async (username) => {
+  try {
+    const response = await axios.get(`/tasks/${username}`);
+    return response.data;
+  } catch (err) {
+    console.error('Failed to fetch tasks:', err);
+    return [];
+  }
+};
+
+const fetchFriends = async (username) => {
+  try {
+    const response = await axios.get(`/friends/${username}`);
+    return response.data;
+  } catch (err) {
+    console.error('Failed to fetch friends list:', err);
+    return [];
+  }
+};
+
 const MainDashboard = ({ username }) => {
   const [userInfo, setUserInfo] = useState({ username: '', email: '' });
+  const [tasks, setTasks] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [isAddTaskPopUpOpen, setIsAddTaskPopUpOpen] = useState(false);
 
   useEffect(() => {
     const getUserInfo = async () => {
       const user = await fetchUserInfo(username);
       setUserInfo(user);
-      console.log('Set User Info:', user); 
+    };
+
+    const getTasks = async () => {
+      const tasks = await fetchTasks(username);
+      setTasks(tasks);
+    };
+
+    const getFriends = async () => {
+      const friends = await fetchFriends(username);
+      setFriends(friends);
     };
 
     getUserInfo();
+    getTasks();
+    getFriends();
   }, [username]);
 
-  console.log('User Info:', userInfo); 
+  const handleAddTask = async (task) => {
+    try {
+      const response = await axios.post('/tasks', { username, task });
+      setTasks([...tasks, { ...task, _id: response.data.taskId }]);
+      setIsAddTaskPopUpOpen(false);
+    } catch (err) {
+      console.error('Failed to add task:', err);
+    }
+  };
 
   return (
     <div className="main-dashboard">
@@ -40,21 +83,34 @@ const MainDashboard = ({ username }) => {
       <div className="main-content">
         <Header />
         <div className="content">
-          {/* Task List Section */}
           <section className="task-list-section">
-            <div className="task">
-              <div className="task-icon"></div>
-              <div className="task-details">
-                <h4>No Tasks Yet</h4>
-                <p>Select the plus icon to add a task</p>
+            {tasks.length === 0 ? (
+              <div className="task">
+                <div className="task-icon"></div>
+                <div className="task-details">
+                  <h4>No Tasks Yet</h4>
+                  <p>Select the plus icon to add a task</p>
+                </div>
+                <div className="task-options">
+                  <button className="task-menu">...</button>
+                </div>
               </div>
-              <div className="task-options">
-                <button className="task-menu">...</button>
-              </div>
-            </div>
-            {/* Add Task Button - Moved Here */}
+            ) : (
+              tasks.map(task => (
+                <div key={task._id} className="task">
+                  <div className="task-icon"></div>
+                  <div className="task-details">
+                    <h4>{task.title}</h4>
+                    <p>{task.description}</p>
+                  </div>
+                  <div className="task-options">
+                    <button className="task-menu">...</button>
+                  </div>
+                </div>
+              ))
+            )}
             <div className="add-task-button">
-              <button>
+              <button onClick={() => setIsAddTaskPopUpOpen(true)}>
                 <img src={images['plus.png']} alt="Add Task" />
               </button>
             </div>
@@ -64,21 +120,15 @@ const MainDashboard = ({ username }) => {
           <section className="friends-section">
             <h3>Friends</h3>
             <div className="friends-list">
-              <div className="friend">
-                <img src={images['defualtpf.jpg']} alt="Friend 1" />
-              </div>
-              <div className="friend">
-                <img src="/path/to/friend2.png" alt="Friend 2" />
-              </div>
-              <div className="friend">
-                <img src="/path/to/friend3.png" alt="Friend 3" />
-              </div>
-              <div className="friend">
-                <img src="/path/to/friend4.png" alt="Friend 4" />
-              </div>
-              <div className="friend">
-                <img src="/path/to/friend5.png" alt="Friend 5" />
-              </div>
+              {friends.length === 0 ? (
+                <p>No friends added yet.</p>
+              ) : (
+                friends.map(friend => (
+                  <div key={friend._id} className="friend">
+                    <img src={friend.profilePicture || images['defaultpf.jpg']} alt={friend.name} />
+                  </div>
+                ))
+              )}
             </div>
             <div className="friend-buttons">
               <button className="add-new">Add New</button>
@@ -87,6 +137,7 @@ const MainDashboard = ({ username }) => {
           </section>
         </div>
       </div>
+      <AddTaskPopUp isOpen={isAddTaskPopUpOpen} closeModal={() => setIsAddTaskPopUpOpen(false)} onSave={handleAddTask} />
     </div>
   );
 };

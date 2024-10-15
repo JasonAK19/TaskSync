@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const connectToDatabase = require('./mongoConnection');
+const { addTask, getTasks } = require('./taskModel');
 
 const app = express();
 const port = 3000;
@@ -75,6 +76,28 @@ app.get('/user/:username', async (req, res) => {
     }
   } catch (err) {
     res.status(500).send('Error fetching user information');
+  }
+});
+
+// Add a new task
+app.post('/tasks', async (req, res) => {
+  const { username, task } = req.body;
+  try {
+    const taskId = await addTask(username, task);
+    res.status(201).json({ taskId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to add task' });
+  }
+});
+
+// Get tasks for a user
+app.get('/tasks/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const tasks = await getTasks(username);
+    res.status(200).json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
