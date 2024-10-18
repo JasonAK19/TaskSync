@@ -91,4 +91,65 @@
   .bottom-menu .menu-item i {
     color: white;
   }
+
+  .group-section-box {
+    background-color: #ECE6F0; 
+    padding: 0px 8px 15px;
+    margin-top: 10px;
+    margin-bottom: 100px;
+    border-radius: 20px;
+  }
   
+  .group-section {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .group-title {
+    font-size: 16px;
+    color: #615382;
+    font-weight: bold;
+    margin: 10px; /* Remove margin to reduce space above the title */
+    text-align: center; /* Center the title text */
+    width: 100%; /* Take full width to center it properly */
+    display: flex; /* Use flex to align items */
+    align-items: center; /* Center items vertically */
+  }
+
+  .group-icon {
+    width: 24px; /* Adjust size as needed */
+    height: 24px; /* Adjust size as needed */
+    margin-right: 8px; /* Space between the icon and the title text */
+  }
+  
+  .group-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  
+  /* Add scrollability if there are more than 4 groups */
+  .scrollable {
+    max-height: 200px;  /* Limits height to 200px (adjust as needed) */
+    overflow-y: auto;  /* Enables vertical scrolling */
+  }
+  
+  .group-item {
+    background-color: #CAC4D0;
+    color: #615382;
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .group-item:hover {
+    background-color: #4e416b;
+    color: white;
+  }
+  
+  .no-groups {
+    text-align: center;
+    color: #615382;
+    font-style: italic;
+  }
