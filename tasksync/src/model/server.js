@@ -2,7 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const connectToDatabase = require('./mongoConnection');
-const { addTask, getTasks } = require('./taskModel');
+const { addTask, getTasks, editTask } = require('./taskModel');
+const { ObjectId } = require('mongodb');
 
 const app = express();
 const port = 3000;
@@ -87,6 +88,24 @@ app.post('/tasks', async (req, res) => {
     res.status(201).json({ taskId });
   } catch (err) {
     res.status(500).json({ error: 'Failed to add task' });
+  }
+});
+
+//Edit an existing task
+app.put('/tasks/:taskId', async (req, res) => {
+  const { taskId } = req.params;
+  const updatedTask = req.body;
+
+  try {
+    const result = await editTask(new ObjectId(taskId), updatedTask);
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: 'Task updated successfully' });
+    } else {
+      res.status(404).json({ error: 'Task not found' });
+    }
+  } catch (err) {
+    console.error('Error updating task:', err);
+    res.status(500).json({ error: 'Failed to update task' });
   }
 });
 

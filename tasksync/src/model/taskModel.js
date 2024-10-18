@@ -19,6 +19,22 @@ async function addTask(username, task) {
   return result.insertedId;
 }
 
+async function editTask(taskId, updatedTask) {
+  const db = await connectToDatabase();
+  const collection = db.collection('tasks');
+  try {
+    const result = await collection.updateOne(
+      { _id: new ObjectId(taskId) },
+      { $set: updatedTask }
+    );
+    return result;
+  } catch (err) {
+    throw new Error('Failed to update task in the database');
+  }
+}
+
+module.exports = { addTask, getTasks, editTask };
+
 async function getTasks(username) {
   const db = await connectToDatabase();
   const collection = db.collection('tasks');
@@ -26,4 +42,4 @@ async function getTasks(username) {
   return tasks;
 }
 
-module.exports = { addTask, getTasks };
+module.exports = { addTask, getTasks, editTask };

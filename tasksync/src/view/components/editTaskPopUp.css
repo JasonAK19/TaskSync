@@ -1,0 +1,138 @@
+/* Modal styling */
+.modal {
+    display: block; 
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+    background-color: #FFFFFF;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #CCC;
+    border-radius: 10px;
+    width: 40%;
+    max-width: 500px;
+    color: #333;
+  }
+  
+  .close {
+    color: #615382;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .close:hover {
+    color: #000;
+  }
+  
+  /* Task title input styling */
+  .task-title-input {
+    margin-bottom: 15px; 
+    width: 80%;
+    padding: 10px; 
+    border: 1px solid #CCC; 
+    border-radius: 5px; 
+    background-color: #F2F0F7; 
+  }
+  
+  /* Task details section */
+  .task-details {
+    margin-top: 10px; 
+  }
+  
+  /* Date and time input styling */
+  .date-time {
+    display: flex;
+    align-items: center;
+    margin-top: 10px; 
+  }
+  
+  .date-time input[type="date"],
+  .date-time input[type="text"] {
+    height: 30px;
+    border-radius: 5px; 
+    margin-right: 10px; 
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    border: 1px solid #CCC;
+    background-color: #F2F0F7;
+  }
+  
+  .time-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .time-input-container input[type="text"] {
+    padding-right: 30px; /* Add padding to make space for the clock icon */
+  }
+  
+  .clock-icon {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  
+  /* Time picker styling */
+  .time-picker {
+    position: absolute;
+    top: 425px; 
+    left: 700px; 
+    background-color: #FFFFFF;
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    max-height: 200px; 
+    overflow-y: auto; 
+    width: 100px; 
+    z-index: 2;
+  }
+  
+  .time-option {
+    padding: 5px;
+    cursor: pointer;
+  }
+  
+  .time-option:hover {
+    background-color: #F2F0F7;
+  }
+  
+  textarea {
+    width: 90%;
+    height: 80px;
+    padding: 10px;
+    border: 1px solid #CCC;
+    border-radius: 5px;
+    margin-top: 10px;
+    background-color: #F2F0F7;
+  }
+  
+  .task-list-dropdown select {
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #F2F0F7;
+    border: 1px solid #CCC;
+  }
+  
+  .save-btn {
+    margin-top: 20px;
+    background-color: #615382;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .save-btn:hover {
+    background-color: #4B3A71;
+  }

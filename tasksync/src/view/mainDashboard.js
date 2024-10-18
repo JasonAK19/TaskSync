@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/sidebar';
 import Header from './components/header';
 import AddTaskPopUp from './components/addTaskPopUp';
+import EditTaskPopUp from "./components/editTaskPopUp";
 import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
@@ -45,6 +46,8 @@ const MainDashboard = ({ username, onLogout }) => {
   const [tasks, setTasks] = useState([]);
   const [friends, setFriends] = useState([]);
   const [isAddTaskPopUpOpen, setIsAddTaskPopUpOpen] = useState(false);
+  const [isEditTaskPopUpOpen, setIsEditTaskPopUpOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState(null);
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -77,6 +80,26 @@ const MainDashboard = ({ username, onLogout }) => {
     }
   };
 
+  const openEditTaskPopup = (task) => {
+    setTaskToEdit(task);
+    setIsEditTaskPopUpOpen(true);
+  };
+
+  const handleEditTask = async (taskId, updatedTask) => {
+    try {
+      const response = await axios.put(`/tasks/${taskId}`, updatedTask);
+      if (response.status === 200) {
+        const updatedTasks = tasks.map(task =>
+          task._id === taskId ? { ...task, ...updatedTask } : task
+        );
+        setTasks(updatedTasks);
+        setIsEditTaskPopUpOpen(false);
+      }
+    } catch (err) {
+      console.error('Error details:', err.response);
+    }
+  };
+
   return (
     <div className="main-dashboard">
       <Sidebar userInfo={userInfo} onLogout={onLogout} />
@@ -104,6 +127,7 @@ const MainDashboard = ({ username, onLogout }) => {
                     <p>{task.description}</p>
                   </div>
                   <div className="task-options">
+                    <button onClick={() => openEditTaskPopup(task)}>Edit</button> {/* Edit button */}
                     <button className="task-menu">...</button>
                   </div>
                 </div>
@@ -137,7 +161,13 @@ const MainDashboard = ({ username, onLogout }) => {
           </section>
         </div>
       </div>
+
+      {/* Add Task Popup */}
       <AddTaskPopUp isOpen={isAddTaskPopUpOpen} closeModal={() => setIsAddTaskPopUpOpen(false)} onSave={handleAddTask} />
+      
+      {/* Edit Task Popup */}
+      <EditTaskPopUp isOpen={isEditTaskPopUpOpen} closeModal={() => setIsEditTaskPopUpOpen(false)} onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} task={taskToEdit} />
+
     </div>
   );
 };
