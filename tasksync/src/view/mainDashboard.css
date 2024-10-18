@@ -151,6 +151,19 @@
     top: 70px;
   }
 
+  .main-dashboard .task-options .task-menu .task-dropdown{
+
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+
+  }
+
 .friends-section {
     margin-top: 20px;
   }

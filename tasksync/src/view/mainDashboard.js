@@ -48,6 +48,7 @@ const MainDashboard = ({ username, onLogout }) => {
   const [isAddTaskPopUpOpen, setIsAddTaskPopUpOpen] = useState(false);
   const [isEditTaskPopUpOpen, setIsEditTaskPopUpOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState(null);
+  const [dropdownVisible, setTaskMenuVisible] = useState(null);
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -101,6 +102,8 @@ const MainDashboard = ({ username, onLogout }) => {
   };
 
   const handleDelete = async (taskId) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this task?");
+    if (!isConfirmed) return;
     try {
       const response = await axios.delete(`/tasks/${taskId}`);
       if (response.status === 200) {
@@ -111,6 +114,11 @@ const MainDashboard = ({ username, onLogout }) => {
       console.error('Failed to delete task:', err);
     }
   };
+
+  const toggleTaskMenu = (taskId) => {
+    setTaskMenuVisible(dropdownVisible === taskId ? null : taskId);
+  };
+
 
   return (
     <div className="main-dashboard">
@@ -139,8 +147,13 @@ const MainDashboard = ({ username, onLogout }) => {
                     <p>{task.description}</p>
                   </div>
                   <div className="task-options">
-                    <button onClick={() => openEditTaskPopup(task)}>Edit</button> {/* Edit button */}
-                    <button className="task-menu">...</button>
+                    <button onClick={() => toggleTaskMenu(task._id)} className="task-menu">...</button>
+                      {dropdownVisible === task._id && (
+                        <div className="dropdown-menu">
+                          <button onClick={() => openEditTaskPopup(task)}>Edit</button>
+                          <button onClick={() => handleDelete(task._id)}>Delete</button>
+                        </div>
+                      )}
                   </div>
                 </div>
               ))
