@@ -120,4 +120,21 @@ app.get('/tasks/:username', async (req, res) => {
   }
 });
 
+// Delete an existing task
+app.delete('/tasks/:taskId', async (req, res) => {
+  const { taskId } = req.params;
+
+  try {
+    const result = await db.collection('tasks').deleteOne({ _id: new ObjectId(taskId) });
+    if (result.deletedCount > 0) {
+      res.status(200).json({ message: 'Task deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'Task not found' });
+    }
+  } catch (err) {
+    console.error('Error deleting task:', err);
+    res.status(500).json({ error: 'Failed to delete task' });
+  }
+});
+
 module.exports = app;

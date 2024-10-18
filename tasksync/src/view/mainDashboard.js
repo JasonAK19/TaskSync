@@ -100,6 +100,18 @@ const MainDashboard = ({ username, onLogout }) => {
     }
   };
 
+  const handleDelete = async (taskId) => {
+    try {
+      const response = await axios.delete(`/tasks/${taskId}`);
+      if (response.status === 200) {
+        const updatedTasks = tasks.filter(task => task._id !== taskId);
+        setTasks(updatedTasks);
+      }
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+    }
+  };
+
   return (
     <div className="main-dashboard">
       <Sidebar userInfo={userInfo} onLogout={onLogout} />
@@ -166,7 +178,7 @@ const MainDashboard = ({ username, onLogout }) => {
       <AddTaskPopUp isOpen={isAddTaskPopUpOpen} closeModal={() => setIsAddTaskPopUpOpen(false)} onSave={handleAddTask} />
       
       {/* Edit Task Popup */}
-      <EditTaskPopUp isOpen={isEditTaskPopUpOpen} closeModal={() => setIsEditTaskPopUpOpen(false)} onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} task={taskToEdit} />
+      <EditTaskPopUp isOpen={isEditTaskPopUpOpen} closeModal={() => setIsEditTaskPopUpOpen(false)} onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} onDelete={() => handleDelete(taskToEdit._id)} task={taskToEdit} />
 
     </div>
   );

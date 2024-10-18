@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./editTaskPopUp.css";
 
-const EditTaskPopUp = ({ isOpen, closeModal, onSave, task }) => {
+const EditTaskPopUp = ({ isOpen, closeModal, onSave, onDelete, task }) => {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
   const [taskTime, setTaskTime] = useState("");
@@ -26,6 +26,11 @@ const EditTaskPopUp = ({ isOpen, closeModal, onSave, task }) => {
     };
     onSave(updatedTask);
     closeModal(); 
+  };
+
+  const handleDelete = () => {
+    onDelete(task._id);
+    closeModal();
   };
 
   const handleTimeChange = (time) => {
@@ -94,6 +99,10 @@ const EditTaskPopUp = ({ isOpen, closeModal, onSave, task }) => {
 
           <button className="save-btn" onClick={handleSave}>
             Save
+          </button>
+
+          <button className="delete-btn" onClick={() => handleDelete(task._id)}>
+            Delete Task
           </button>
         </div>
       </div>
