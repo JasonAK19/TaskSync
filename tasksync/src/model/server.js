@@ -1,6 +1,4 @@
 const express = require('express');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const connectToDatabase = require('./mongoConnection');
@@ -13,15 +11,6 @@ const port = 3000;
 app.use(bodyParser.json());
 
 let db;
-
-// nodemailer
-const transporter = nodemailer.createTransport({
-  service: 'Gmail',
-  auth: {
-    user: 'your-email@gmail.com',
-    pass: 'your-email-password'
-  }
-});
 
 // Connect to MongoDB
 connectToDatabase().then(database => {
@@ -38,48 +27,18 @@ app.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const verificationToken = crypto.randomBytes(32).toString('hex');
     const result = await db.collection('User').insertOne({
       email,
       username,
       password: hashedPassword,
       registrationDate: new Date(),
       friends: [],
-      groups: [],
-      isVerified: false,
-      verificationToken
+      groups: []
+      
     });
-
-    // Send verification email
-    const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
-    await transporter.sendMail({
-      to: email,
-      subject: 'Email Verification',
-      html: `<p>Please verify your email by clicking the following link: <a href="${verificationUrl}">Verify Email</a></p>`
-    });
-
     res.status(201).json({ _id: result.insertedId });
   } catch (err) {
     res.status(500).json({ error: 'Failed to register user' });
-  }
-});
-
-// Verify email
-app.get('/verify-email', async (req, res) => {
-  try {
-    const { token } = req.query;
-    const result = await db.collection('User').findOneAndUpdate(
-      { verificationToken: token },
-      { $set: { isVerified: true }, $unset: { verificationToken: '' } }
-    );
-
-    if (result.value) {
-      res.status(200).send('Email verified successfully');
-    } else {
-      res.status(400).send('Invalid or expired token');
-    }
-  } catch (err) {
-    res.status(500).send('Error verifying email');
   }
 });
 
@@ -92,11 +51,6 @@ app.post('/login', async (req, res) => {
     if (!user) {
       console.log('User not found');
       return res.status(404).json({ error: 'User not found' });
-    }
-
-    if (!user.isVerified) {
-      console.log('User not verified');
-      return res.status(403).json({ error: 'Please verify your email before logging in' });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);

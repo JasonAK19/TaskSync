@@ -30,12 +30,9 @@ function AuthPage({ onLogin }) {
         password: formData.password
       });
       console.log('User registered:', response.data);
-      alert('Registration successful! Please check your email to verify your account.');
       onLogin(formData.username); 
     } catch (error) {
       console.error('Error registering user:', error);
-      setErrorMessage('Email doesnt exist');
-
     }
   };
 
