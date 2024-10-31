@@ -3,6 +3,7 @@ import Sidebar from './components/sidebar';
 import Header from './components/header';
 import AddTaskPopUp from './components/addTaskPopUp';
 import EditTaskPopUp from "./components/editTaskPopUp";
+import AddGroupPopUp from './components/addGroupPopUp'; // Import AddGroupPopUp
 import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
@@ -47,6 +48,7 @@ const MainDashboard = ({ username, onLogout }) => {
   const [friends, setFriends] = useState([]);
   const [isAddTaskPopUpOpen, setIsAddTaskPopUpOpen] = useState(false);
   const [isEditTaskPopUpOpen, setIsEditTaskPopUpOpen] = useState(false);
+  const [isAddGroupPopUpOpen, setIsAddGroupPopUpOpen] = useState(false); // State for AddGroupPopUp
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [dropdownVisible, setTaskMenuVisible] = useState(null);
 
@@ -79,6 +81,10 @@ const MainDashboard = ({ username, onLogout }) => {
     } catch (err) {
       console.error('Failed to add task:', err);
     }
+  };
+
+  const handleAddGroup = (groupName) => {
+    setIsAddGroupPopUpOpen(false);
   };
 
   const openEditTaskPopup = (task) => {
@@ -119,10 +125,9 @@ const MainDashboard = ({ username, onLogout }) => {
     setTaskMenuVisible(dropdownVisible === taskId ? null : taskId);
   };
 
-
   return (
     <div className="main-dashboard">
-      <Sidebar userInfo={userInfo} onLogout={onLogout} />
+      <Sidebar userInfo={userInfo} onLogout={onLogout} onOpenAddGroupPopUp={() => setIsAddGroupPopUpOpen(true)} />
       <div className="main-content">
         <Header />
         <div className="content">
@@ -192,6 +197,9 @@ const MainDashboard = ({ username, onLogout }) => {
       
       {/* Edit Task Popup */}
       <EditTaskPopUp isOpen={isEditTaskPopUpOpen} closeModal={() => setIsEditTaskPopUpOpen(false)} onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} onDelete={() => handleDelete(taskToEdit._id)} task={taskToEdit} />
+
+      {/* Add Group Popup */}
+      <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} />
 
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './addGroupPopUp.css';
 
-const AddGroupPopUp = ({ onClose, onAddGroup }) => {
+const AddGroupPopUp = ({ isOpen, onClose, onAddGroup }) => {
   const [groupName, setGroupName] = useState('');
 
   const handleGroupNameChange = (e) => {
@@ -15,6 +15,8 @@ const AddGroupPopUp = ({ onClose, onAddGroup }) => {
       onClose(); // Close the popup after adding the group
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="popup-overlay">

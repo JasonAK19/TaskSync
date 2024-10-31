@@ -95,7 +95,8 @@
   .group-section-box {
     background-color: #ECE6F0; 
     padding: 0px 8px 15px;
-    top: -100px;
+    position: relative; /* Ensure the element is positioned relative to its normal position */
+    top: -50px; /* Adjust this value to raise the position */
     margin-bottom: 100px;
     border-radius: 20px;
   }

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import images from '../../assets';
-import './sidebar.css';
 import AddGroupPopUp from './addGroupPopUp.js';
+import images from '../../assets';
+import myGroupsIcon from '../../assets/myGroups.png';
+import './sidebar.css';
 
-const Sidebar = ({ userInfo = {}, onLogout }) => {
+const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp }) => {
   console.log('Sidebar User Info:', userInfo);
 
   const [groups, setGroups] = useState([]);
@@ -32,7 +33,7 @@ const Sidebar = ({ userInfo = {}, onLogout }) => {
   return (
     <div className="Sidebar">
       <div className="profile-section">
-        <img src={images['defualtpf.jpg']} alt="Profile" className="profile-picture" />
+        <img src={images['defaultpf.jpg']} alt="Profile" className="profile-picture" />
         <span className="username">{userInfo?.username}</span>
       </div>
 
@@ -47,7 +48,7 @@ const Sidebar = ({ userInfo = {}, onLogout }) => {
           <img src={images['memo.png']} alt="task" className="menu-icon" /> Create Event
         </button>
 
-        <button className="menu-item" onClick={() => setIsPopupOpen(true)}>
+        <button className="menu-item" onClick={onOpenAddGroupPopUp}>
           <img src={images['createGroups.png']} alt="task" className="menu-icon" /> Create Group
         </button>
 
@@ -56,11 +57,11 @@ const Sidebar = ({ userInfo = {}, onLogout }) => {
         </button>
       </div>
 
-        {/* Group Section */}
+      {/* Group Section */}
       <div className="group-section-box">
         <div className="group-section">
           <h4 className="group-title">
-            <img src={images["myGroups.png"]} alt="My Groups" className="group-icon" /> 
+            <img src={myGroupsIcon} alt="My Groups" className="group-icon" /> 
             Your Groups
           </h4>
           <ul className={`group-list ${groups.length > 4 ? 'scrollable' : ''}`}>
@@ -76,7 +77,6 @@ const Sidebar = ({ userInfo = {}, onLogout }) => {
           </ul>
         </div>
       </div>
-
 
       <div className="bottom-menu">
         <button className="menu-item">
