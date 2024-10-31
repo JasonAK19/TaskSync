@@ -33,7 +33,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp }) => {
   return (
     <div className="Sidebar">
       <div className="profile-section">
-        <img src={images['defaultpf.jpg']} alt="Profile" className="profile-picture" />
+        <img src={images['defualtpf.jpg']} alt="Profile" className="profile-picture" />
         <span className="username">{userInfo?.username}</span>
       </div>
 
