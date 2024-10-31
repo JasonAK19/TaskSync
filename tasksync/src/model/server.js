@@ -31,7 +31,10 @@ app.post('/register', async (req, res) => {
       email,
       username,
       password: hashedPassword,
-      registrationDate: new Date()
+      registrationDate: new Date(),
+      friends: [],
+      groups: []
+      
     });
     res.status(201).json({ _id: result.insertedId });
   } catch (err) {
@@ -136,5 +139,33 @@ app.delete('/tasks/:taskId', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete task' });
   }
 });
+
+
+// Fetch user groups
+app.get('/api/user/:username/groups', async (req, res) => {
+  try {
+    const user = await db.collection('User').findOne({ username: req.params.username });
+    const groups = await db.collection('Group').find({ members: user._id }).toArray();
+    res.json({ groups });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching groups' });
+  }
+});
+
+// Add a new group
+app.post('/api/user/:username/groups', async (req, res) => {
+  try {
+    const user = await db.collection('User').findOne({ username: req.params.username });
+    const newGroup = {
+      name: req.body.name,
+      members: [user._id]
+    };
+    const result = await db.collection('Group').insertOne(newGroup);
+    res.json({ group: newGroup });
+  } catch (error) {
+    res.status(500).json({ error: 'Error adding group' });
+  }
+});
+
 
 module.exports = app;

@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import images from '../../assets';
-import myGroupsIcon from '../../assets/myGroups.png';
 import './sidebar.css';
 import AddGroupPopUp from './addGroupPopUp.js';
 
-const Sidebar = ({ userInfo, onLogout }) => {
+const Sidebar = ({ userInfo = {}, onLogout }) => {
   console.log('Sidebar User Info:', userInfo);
 
-  const [groups, setGroups] = useState([
-    { name: 'Study Group' },
-    { name: 'Project Team' },
-    { name: 'Fitness Buddies' },
-    { name: 'Book Club' },
-    { name: 'Gaming Friends' },
-  ]);
+  const [groups, setGroups] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await axios.get(`/api/user/${userInfo.username}/groups`);
+        setGroups(response.data.groups);
+      } catch (err) {
+        console.error('Failed to fetch groups:', err);
+      }
+    };
+
+    if (userInfo.username) {
+      fetchGroups();
+    }
+  }, [userInfo.username]);
 
   const handleAddGroup = (groupName) => {
     setGroups([...groups, { name: groupName }]);
@@ -47,11 +56,11 @@ const Sidebar = ({ userInfo, onLogout }) => {
         </button>
       </div>
 
-      {/* Group Section */}
+        {/* Group Section */}
       <div className="group-section-box">
         <div className="group-section">
           <h4 className="group-title">
-            <img src={myGroupsIcon} alt="My Groups" className="group-icon" /> 
+            <img src={images["myGroups.png"]} alt="My Groups" className="group-icon" /> 
             Your Groups
           </h4>
           <ul className={`group-list ${groups.length > 4 ? 'scrollable' : ''}`}>
@@ -62,11 +71,12 @@ const Sidebar = ({ userInfo, onLogout }) => {
                 </li>
               ))
             ) : (
-              <li className="group-item no-groups">No groups yet</li>
+              <li className="group-item no-groups">You don't have any groups yet</li>
             )}
           </ul>
         </div>
       </div>
+
 
       <div className="bottom-menu">
         <button className="menu-item">

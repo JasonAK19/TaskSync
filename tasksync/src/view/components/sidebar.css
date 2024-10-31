@@ -95,7 +95,7 @@
   .group-section-box {
     background-color: #ECE6F0; 
     padding: 0px 8px 15px;
-    margin-top: 10px;
+    top: -100px;
     margin-bottom: 100px;
     border-radius: 20px;
   }
@@ -128,7 +128,6 @@
     margin: 0;
   }
   
-  /* Add scrollability if there are more than 4 groups */
   .scrollable {
     max-height: 200px;  /* Limits height to 200px (adjust as needed) */
     overflow-y: auto;  /* Enables vertical scrolling */

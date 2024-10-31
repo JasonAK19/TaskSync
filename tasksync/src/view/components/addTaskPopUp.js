@@ -2,10 +2,22 @@ import React, { useState } from "react";
 import "./addTaskPopUp.css"; 
 
 const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
+
+  const getCurrentDate = () => {
+    const date = new Date();
+    return date.toISOString().split('T')[0]; 
+  };
+
+  const getCurrentTime = () => {
+    const date = new Date();
+    return date.toTimeString().split(' ')[0].slice(0, 5); 
+  };
+
+
   const [taskTitle, setTaskTitle] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
-  const [taskTime, setTaskTime] = useState("12:30");
-  const [taskDate, setTaskDate] = useState("2024-10-14");
+  const [taskTime, setTaskTime] = useState(getCurrentTime());
+  const [taskDate, setTaskDate] = useState(getCurrentDate());
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleSave = () => {
