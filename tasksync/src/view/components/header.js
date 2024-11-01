@@ -1,7 +1,8 @@
 import React from 'react';
 import './header.css';
+import NotificationBell from './notificationBell';
 
-const Header = () => {
+const Header = ({ userId }) => {
     return (
         <header className="header">
           <div className="header-title">
@@ -9,6 +10,7 @@ const Header = () => {
           </div>
           <nav className="header-nav">
             <ul className="nav-links">
+             <NotificationBell userId={userId} />
               <li><a href="#home">Home</a></li>
               <li><a href="#event-planning">Event Planning</a></li>
               <li><a href="#collaboration">Collaboration</a></li>

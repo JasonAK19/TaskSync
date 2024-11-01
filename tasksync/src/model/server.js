@@ -1,8 +1,14 @@
 const express = require('express');
+const deepEmailValidator = require('deep-email-validator');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto')
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
+
 const connectToDatabase = require('./mongoConnection');
 const { addTask, getTasks, editTask } = require('./taskModel');
+const { createNotification, getNotifications, markAsRead } = require('./notificationModel');
+const { sendFriendRequest, getFriendRequests, updateFriendRequestStatus } = require('./friendRequestModel');
 const { ObjectId } = require('mongodb');
 
 const app = express();
@@ -12,6 +18,16 @@ app.use(bodyParser.json());
 
 let db;
 
+// nodemailer
+const transporter = nodemailer.createTransport({
+  host: 'Gmail', 
+  port: 587, // or 465 for SSL
+  secure: false, // true for 465
+  auth: {
+    user: 'tsync99@gmail.com',
+    pass: 'derpherp90'
+  }
+});
 // Connect to MongoDB
 connectToDatabase().then(database => {
   db = database;
@@ -22,23 +38,73 @@ connectToDatabase().then(database => {
   console.error('Failed to connect to MongoDB', err);
 });
 
+
+// validate email function
+async function isEmailValid(email) {
+  return deepEmailValidator.validate(email);
+}
+
 // Register a new user
 app.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    const { valid, reason, validators } = await isEmailValid(email);
+    if (!valid) {
+      return res.status(400).json({ error: `Invalid email: ${reason}. ${validators[reason].reason}` });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
     const result = await db.collection('User').insertOne({
       email,
       username,
       password: hashedPassword,
       registrationDate: new Date(),
       friends: [],
-      groups: []
-      
+      groups: [],
+      verificationToken,
+      isVerified: false
     });
+
+    const verificationLink = `http://localhost:${port}/verify-email?token=${verificationToken}`;
+    await transporter.sendMail({
+      from: 'tsync99@gmail.com',
+      to: email,
+      subject: 'Task Sync Verification',
+      html: `<p>Please verify your email by clicking on the following link: <a href="${verificationLink}">Verify Email</a></p>`
+    }, (error, info) => {
+      if (error) {
+        console.error('Error sending email:', error);
+      } else {
+        console.log('Email sent:', info.response);
+      }
+    });
+
+
+
     res.status(201).json({ _id: result.insertedId });
   } catch (err) {
+    console.error('Error registering user:', err);
     res.status(500).json({ error: 'Failed to register user' });
+  }
+});
+
+// Verify email
+app.get('/verify-email', async (req, res) => {
+  try {
+    const { token } = req.query;
+    const result = await db.collection('User').findOneAndUpdate(
+      { verificationToken: token },
+      { $set: { isVerified: true }, $unset: { verificationToken: "" } }
+    );
+
+    if (!result.value) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    res.status(200).json({ message: 'Email verified successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to verify email' });
   }
 });
 
@@ -73,13 +139,15 @@ app.get('/user/:username', async (req, res) => {
   try {
     const { username } = req.params;
     const user = await db.collection('User').findOne({ username }, { projection: { _id: 0, username: 1, email: 1 } });
-    if (user) {
-      res.status(200).json(user);
-    } else {
-      res.status(404).send('User not found');
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
     }
+
+    const { password, ...userInfo } = user;
+    res.status(200).json(userInfo);
   } catch (err) {
-    res.status(500).send('Error fetching user information');
+    res.status(500).json({ error: 'Failed to get user information' });
   }
 });
 
@@ -167,5 +235,79 @@ app.post('/api/user/:username/groups', async (req, res) => {
   }
 });
 
+
+// Add a new notification
+app.post('/notifications', async (req, res) => {
+  try {
+    const { userId, message } = req.body;
+    const notification = {
+      userId: new ObjectId(userId),
+      message,
+      read: false,
+      date: new Date()
+    };
+    const notificationId = await createNotification(db, notification);
+    res.status(201).json({ notificationId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
+
+// Get notifications for a user
+app.get('/notifications/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const notifications = await getNotifications(db, userId);
+    res.status(200).json(notifications);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+
+// Mark notification as read
+app.put('/notifications/:notificationId/read', async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    await markAsRead(db, notificationId);
+    res.status(200).json({ message: 'Notification marked as read' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
+// Send a friend request
+app.post('/friend-requests', async (req, res) => {
+  try {
+    const { fromUserId, toUsername } = req.body;
+    const requestId = await sendFriendRequest(db, fromUserId, toUsername);
+    res.status(201).json({ requestId });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get friend requests for a user
+app.get('/friend-requests/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const requests = await getFriendRequests(db, userId);
+    res.status(200).json(requests);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch friend requests' });
+  }
+});
+
+// Update friend request status
+app.put('/friend-requests/:requestId', async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { status } = req.body;
+    await updateFriendRequestStatus(db, requestId, status);
+    res.status(200).json({ message: 'Friend request status updated' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update friend request status' });
+  }
+});
 
 module.exports = app;

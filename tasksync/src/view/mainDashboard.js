@@ -3,7 +3,9 @@ import Sidebar from './components/sidebar';
 import Header from './components/header';
 import AddTaskPopUp from './components/addTaskPopUp';
 import EditTaskPopUp from "./components/editTaskPopUp";
-import AddGroupPopUp from './components/addGroupPopUp'; // Import AddGroupPopUp
+import AddGroupPopUp from './components/addGroupPopUp'; 
+import FriendRequestPopUp from './components/friendRequestPopUp';
+
 import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
@@ -42,7 +44,7 @@ const fetchFriends = async (username) => {
   }
 };
 
-const MainDashboard = ({ username, onLogout }) => {
+const MainDashboard = ({ username, userId, onLogout }) => {
   const [userInfo, setUserInfo] = useState({ username: '', email: '' });
   const [tasks, setTasks] = useState([]);
   const [friends, setFriends] = useState([]);
@@ -51,6 +53,8 @@ const MainDashboard = ({ username, onLogout }) => {
   const [isAddGroupPopUpOpen, setIsAddGroupPopUpOpen] = useState(false); // State for AddGroupPopUp
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [dropdownVisible, setTaskMenuVisible] = useState(null);
+  const [isFriendRequestPopUpOpen, setIsFriendRequestPopUpOpen] = useState(false);
+
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -185,7 +189,7 @@ const MainDashboard = ({ username, onLogout }) => {
               )}
             </div>
             <div className="friend-buttons">
-              <button className="add-new">Add New</button>
+            <button className="add-new" onClick={() => setIsFriendRequestPopUpOpen(true)}>Add New</button>
               <button className="show-all">Show All</button>
             </div>
           </section>
@@ -200,7 +204,9 @@ const MainDashboard = ({ username, onLogout }) => {
 
       {/* Add Group Popup */}
       <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} />
-
+      
+      {/* Friend Request Popup */}
+      <FriendRequestPopUp isOpen={isFriendRequestPopUpOpen} onClose={() => setIsFriendRequestPopUpOpen(false)} userId={userId} />
     </div>
   );
 };

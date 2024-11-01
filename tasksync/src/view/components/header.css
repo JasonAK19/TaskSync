@@ -36,4 +36,14 @@
   .header-nav .nav-links li a:hover {
     color: #615382; 
   }
+
+  .notification {
+    position: relative;
+    margin-left: 20px;
+  }
+
+  .notification-icon {
+    width: 24px; 
+    height: 24px;
+  }
   

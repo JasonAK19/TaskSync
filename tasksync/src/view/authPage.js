@@ -33,6 +33,11 @@ function AuthPage({ onLogin }) {
       onLogin(formData.username); 
     } catch (error) {
       console.error('Error registering user:', error);
+      if (error.response && error.response.data && error.response.data.error) {
+        setErrorMessage(error.response.data.error);
+      } else {
+        setErrorMessage('Error registering user');
+      }
     }
   };
 

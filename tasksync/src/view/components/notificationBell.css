@@ -1,0 +1,64 @@
+.notification-bell {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .notification-icon {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  
+  .notification-count {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+  }
+  
+  .notification-dropdown {
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    width: 300px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+  
+  .notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .notification-item.unread {
+    background-color: #f9f9f9;
+  }
+  
+  .notification-item.read {
+    background-color: #fff;
+  }
+  
+  .notification-item p {
+    margin: 0;
+  }
+  
+  .notification-item button {
+    background-color: #615382;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+  
+  .notification-item button:hover {
+    background-color: #4B3A71;
+  }
