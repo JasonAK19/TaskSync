@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+
 import Sidebar from './components/sidebar';
 import Header from './components/header';
 import AddTaskPopUp from './components/addTaskPopUp';
 import EditTaskPopUp from "./components/editTaskPopUp";
 import AddGroupPopUp from './components/addGroupPopUp'; 
 import FriendRequestPopUp from './components/friendRequestPopUp';
+import CompactCalendar from './components/compactCalendar';
 
 import axios from 'axios';
 import './mainDashboard.css';
@@ -54,7 +56,6 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [dropdownVisible, setTaskMenuVisible] = useState(null);
   const [isFriendRequestPopUpOpen, setIsFriendRequestPopUpOpen] = useState(false);
-
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -172,8 +173,14 @@ const MainDashboard = ({ username, userId, onLogout }) => {
                 <img src={images['plus.png']} alt="Add Task" />
               </button>
             </div>
-          </section>
 
+
+             {/* Calendar Section */}
+          <section className="calendar-section compact-calendar-container" >
+            <CompactCalendar tasks={tasks} />
+          </section>
+          
+          </section>
           {/* Friends Section */}
           <section className="friends-section">
             <h3>Friends</h3>
@@ -193,6 +200,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
               <button className="show-all">Show All</button>
             </div>
           </section>
+         
         </div>
       </div>
 
