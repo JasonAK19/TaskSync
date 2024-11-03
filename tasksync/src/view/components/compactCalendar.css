@@ -5,7 +5,6 @@
     margin-top: 10px;
     margin-left: 15px;
     padding: 20px;
-
     border-radius: 12px;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -71,4 +70,42 @@
 
 .compact-calendar .fc .fc-button:hover {
   color: #8a2be2;
+}
+
+.compact-calendar .fc .fc-daygrid-day-number {
+  font-size: 0.9rem;
+  color: #333;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-marker {
+  color: #8a2be2; /* Customize the color as needed */
+  font-size: 1.2rem;
+  vertical-align: middle;
+  margin-right: 5px; /* Space between the marker and the date */
+  position: absolute;
+  right: 25px; /* Adjust the position as needed */
+}
+
+.custom-event {
+  display: flex;
+  align-items: center;
+}
+
+.event-dot {
+  background-color: #8a2be2; /* Customize the color as needed */
+  width: 10px; /* Adjust the size as needed */
+  height: 10px; /* Adjust the size as needed */
+  border-radius: 50%; /* Make it circular */
+  margin-right: 5px;
+}
+
+.event-title {
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

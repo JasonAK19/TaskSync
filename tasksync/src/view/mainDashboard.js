@@ -81,13 +81,13 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const handleAddTask = async (task) => {
     try {
       const response = await axios.post('/tasks', { username, task });
-      setTasks([...tasks, { ...task, _id: response.data.taskId }]);
+      setTasks([...tasks, { ...task, _id: response.data.taskId, startDate: task.startDate, endDate: task.endDate }]);
       setIsAddTaskPopUpOpen(false);
     } catch (err) {
       console.error('Failed to add task:', err);
     }
   };
-
+  
   const handleAddGroup = (groupName) => {
     setIsAddGroupPopUpOpen(false);
   };
@@ -179,7 +179,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
           <section className="calendar-section compact-calendar-container" >
             <CompactCalendar tasks={tasks} />
           </section>
-          
+
           </section>
           {/* Friends Section */}
           <section className="friends-section">

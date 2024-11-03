@@ -30,8 +30,8 @@ const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
     onSave(task);
     setTaskTitle("");
     setTaskDescription("");
-    setTaskTime("12:30");
-    setTaskDate("2024-10-14");
+    setTaskTime(taskTime);
+    setTaskDate(taskDate);
   };
 
   const handleTimeChange = (time) => {
