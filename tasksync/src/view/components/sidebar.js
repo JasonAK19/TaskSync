@@ -14,7 +14,9 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp }) => {
     const fetchGroups = async () => {
       try {
         const response = await axios.get(`/api/user/${userInfo.username}/groups`);
-        setGroups(response.data.groups);
+        console.log('API Response:', response.data); // Log the API response
+        setGroups(response.data.groups || []);
+        console.log('Groups state:', response.data.groups || []); // Log the updated state
       } catch (err) {
         console.error('Failed to fetch groups:', err);
       }

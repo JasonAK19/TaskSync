@@ -224,17 +224,26 @@ app.post('/api/groups', async (req, res) => {
   }
 });
 
-// Get groups for a user
-app.get('/api/groups/:username', async (req, res) => {
+// Fetch groups for a user
+app.get('/api/user/:username/groups', async (req, res) => {
   try {
     const { username } = req.params;
-    const groups = await db.collection('Group')
-      .find({ members: username })
-      .toArray();
-    
-    res.status(200).json(groups);
-  } catch (error) {
-    console.error('Error fetching groups:', error);
+    console.log('Fetching groups for user:', username); // Log the username
+
+    const user = await db.collection('User').findOne({ username });
+    console.log('User found:', user); // Log the user
+
+    if (!user) {
+      console.log('User not found');
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const groups = await db.collection('Group').find({ members: { $in: [username] } }).toArray();
+    console.log('Fetched groups:', groups); // Log the fetched groups
+
+    res.status(200).json({ groups });
+  } catch (err) {
+    console.error('Error fetching groups:', err);
     res.status(500).json({ error: 'Failed to fetch groups' });
   }
 });

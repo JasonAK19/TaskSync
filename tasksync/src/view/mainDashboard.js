@@ -63,6 +63,17 @@ const fetchFriends = async (username) => {
   }
 };
 
+const fetchGroups = async (username) => {
+  try {
+    const response = await axios.get(`/api/user/${username}/groups`);
+    console.log('Dashboard API Response:', response.data);
+    return response.data.groups || [];
+  } catch (error) {
+    console.error('Failed to fetch groups:', error);
+    return [];
+  }
+};
+
 const MainDashboard = ({ username, userId, onLogout }) => {
   const [userInfo, setUserInfo] = useState({ username: '', email: '' });
   const [tasks, setTasks] = useState([]);
@@ -94,17 +105,14 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       setFriends(friends);
     };
 
-    const fetchGroups = async () => {
-      try {
-        const response = await axios.get(`/api/groups/${username}`);
-        setGroups(response.data);
-      } catch (error) {
-        console.error('Failed to fetch groups:', error);
-      }
+    const getGroups = async () => {
+      const groups = await fetchGroups(username);
+      setGroups(groups);
     };
+    
 
     if (username) {
-      fetchGroups();
+      getGroups();
     }
     getUserInfo();
     getTasks();
