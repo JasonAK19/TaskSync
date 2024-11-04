@@ -6,6 +6,7 @@ import myGroupsIcon from '../../assets/myGroups.png';
 import './sidebar.css';
 
 const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp }) => {
+
   const [groups, setGroups] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
 

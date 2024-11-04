@@ -49,18 +49,22 @@ const NotificationBell = ({ username }) => {
   const handleFriendRequest = async (requestId, action) => {
     try {
       console.log('Handling friend request:', requestId, action);
-      
+        
       // Update friend request status
       await axios.put(`/friend-requests/${requestId}`, { status: action });
-      
-      // Delete notification
-      await axios.delete(`/api/notifications/${requestId}`);
-      
-      // Update local state
+        
+      // Delete notification using notification _id instead of requestId
+      const notificationToDelete = notifications.find(n => n.requestId === requestId);
+      if (notificationToDelete && notificationToDelete._id) {
+        await axios.delete(`/api/notifications/${notificationToDelete._id}`);
+      }
+        
+      // Update local state using notification _id
       const updatedNotifications = notifications.filter(n => n.requestId !== requestId);
       setNotifications(updatedNotifications);
-      
-      // Decrement unread count if notification was unread
+      setIsDropdownOpen(false); // Close dropdown after action
+        
+      // Update unread count
       const notification = notifications.find(n => n.requestId === requestId);
       if (notification && !notification.read) {
         setUnreadCount(prev => Math.max(0, prev - 1));

@@ -73,6 +73,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [dropdownVisible, setTaskMenuVisible] = useState(null);
   const [isFriendRequestPopUpOpen, setIsFriendRequestPopUpOpen] = useState(false);
+  const [groups, setGroups] = useState([]);
 
   useEffect(() => {
 
@@ -93,6 +94,18 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       setFriends(friends);
     };
 
+    const fetchGroups = async () => {
+      try {
+        const response = await axios.get(`/api/groups/${username}`);
+        setGroups(response.data);
+      } catch (error) {
+        console.error('Failed to fetch groups:', error);
+      }
+    };
+
+    if (username) {
+      fetchGroups();
+    }
     getUserInfo();
     getTasks();
     getFriends();
@@ -108,10 +121,16 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     }
   };
   
-  const handleAddGroup = (groupName) => {
-    setIsAddGroupPopUpOpen(false);
+  const handleAddGroup = async (groupData) => {
+    try {
+      const response = await axios.post('/api/groups', groupData);
+      setGroups([...groups, response.data.group]);
+      setIsAddGroupPopUpOpen(false);
+    } catch (error) {
+      console.error('Failed to create group:', error);
+    }
   };
-
+ 
   const openEditTaskPopup = (task) => {
     setTaskToEdit(task);
     setIsEditTaskPopUpOpen(true);
@@ -232,7 +251,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       <EditTaskPopUp isOpen={isEditTaskPopUpOpen} closeModal={() => setIsEditTaskPopUpOpen(false)} onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} onDelete={() => handleDelete(taskToEdit._id)} task={taskToEdit} />
 
       {/* Add Group Popup */}
-      <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} />
+      <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} currentUser={username} />
       
       {/* Friend Request Popup */}
       <FriendRequestPopUp isOpen={isFriendRequestPopUpOpen} onClose={() => setIsFriendRequestPopUpOpen(false)} currentUser={{username: username}} />

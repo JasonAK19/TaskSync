@@ -3,8 +3,6 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors'); // Import the CORS middleware
 const deepEmailValidator = require('deep-email-validator');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 
@@ -32,16 +30,7 @@ app.use(bodyParser.json());
 
 let db;
 
-// nodemailer
-const transporter = nodemailer.createTransport({
-  host: 'Gmail',
-  port: 587, // or 465 for SSL
-  secure: false, // true for 465
-  auth: {
-    user: 'tsync99@gmail.com',
-    pass: 'derpherp90'
-  }
-});
+
 
 // Connect to MongoDB
 connectToDatabase().then(database => {
@@ -61,9 +50,13 @@ io.on('connection', (socket) => {
   });
 });
 
-// validate email function
+// validate email function with timeout
 async function isEmailValid(email) {
-  return deepEmailValidator.validate(email);
+  const timeout = 5000; // 5 seconds timeout
+  return Promise.race([
+    deepEmailValidator.validate(email),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Validation timeout')), timeout))
+  ]);
 }
 
 // Register a new user
@@ -71,12 +64,19 @@ app.post('/register', async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    const { valid, reason, validators } = await isEmailValid(email);
-    if (!valid) {
-      return res.status(400).json({ error: `Invalid email: ${reason}. ${validators[reason].reason}` });
-    }
+    // Remove email validation
+    // const { valid, reason, validators } = await isEmailValid(email).catch(err => {
+    //   if (err.message === 'Validation timeout') {
+    //     return { valid: false, reason: 'timeout', validators: { timeout: { reason: 'Email validation timed out' } } };
+    //   }
+    //   throw err;
+    // });
+
+    // if (!valid) {
+    //   return res.status(400).json({ error: `Invalid email: ${reason}. ${validators[reason].reason}` });
+    // }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const verificationToken = crypto.randomBytes(32).toString('hex');
     const result = await db.collection('User').insertOne({
       email,
       username,
@@ -84,47 +84,13 @@ app.post('/register', async (req, res) => {
       registrationDate: new Date(),
       friends: [],
       groups: [],
-      verificationToken,
-      isVerified: false
-    });
-
-    const verificationLink = `http://localhost:${port}/verify-email?token=${verificationToken}`;
-    await transporter.sendMail({
-      from: 'tsync99@gmail.com',
-      to: email,
-      subject: 'Task Sync Verification',
-      html: `<p>Please verify your email by clicking on the following link: <a href="${verificationLink}">Verify Email</a></p>`
-    }, (error, info) => {
-      if (error) {
-        console.error('Error sending email:', error);
-      } else {
-        console.log('Email sent:', info.response);
-      }
+      isVerified: true
     });
 
     res.status(201).json({ _id: result.insertedId });
   } catch (err) {
     console.error('Error registering user:', err);
     res.status(500).json({ error: 'Failed to register user' });
-  }
-});
-
-// Verify email
-app.get('/verify-email', async (req, res) => {
-  try {
-    const { token } = req.query;
-    const result = await db.collection('User').findOneAndUpdate(
-      { verificationToken: token },
-      { $set: { isVerified: true }, $unset: { verificationToken: "" } }
-    );
-
-    if (!result.value) {
-      return res.status(400).json({ error: 'Invalid or expired token' });
-    }
-
-    res.status(200).json({ message: 'Email verified successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to verify email' });
   }
 });
 
@@ -228,14 +194,48 @@ app.delete('/tasks/:taskId', async (req, res) => {
   }
 });
 
-// Fetch user groups
-app.get('/api/user/:username/groups', async (req, res) => {
+// Create a new group
+app.post('/api/groups', async (req, res) => {
   try {
-    const user = await db.collection('User').findOne({ username: req.params.username });
-    const groups = await db.collection('Group').find({ members: user._id }).toArray();
-    res.json({ groups });
+    const { name, creator, members } = req.body;
+    
+    const newGroup = {
+      name,
+      creator,
+      members,
+      createdAt: new Date()
+    };
+
+    const result = await db.collection('Group').insertOne(newGroup);
+    
+    // Update all members' user documents to include this group
+    await db.collection('User').updateMany(
+      { username: { $in: members } },
+      { $push: { groups: result.insertedId } }
+    );
+
+    res.status(201).json({ 
+      groupId: result.insertedId,
+      group: newGroup 
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching groups' });
+    console.error('Error creating group:', error);
+    res.status(500).json({ error: 'Failed to create group' });
+  }
+});
+
+// Get groups for a user
+app.get('/api/groups/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const groups = await db.collection('Group')
+      .find({ members: username })
+      .toArray();
+    
+    res.status(200).json(groups);
+  } catch (error) {
+    console.error('Error fetching groups:', error);
+    res.status(500).json({ error: 'Failed to fetch groups' });
   }
 });
 
