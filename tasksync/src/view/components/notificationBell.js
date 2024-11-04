@@ -49,14 +49,23 @@ const NotificationBell = ({ username }) => {
   const handleFriendRequest = async (requestId, action) => {
     try {
       console.log('Handling friend request:', requestId, action);
+      
+      // Update friend request status
       await axios.put(`/friend-requests/${requestId}`, { status: action });
       
-      // Update notification
+      // Delete notification
+      await axios.delete(`/api/notifications/${requestId}`);
+      
+      // Update local state
       const updatedNotifications = notifications.filter(n => n.requestId !== requestId);
       setNotifications(updatedNotifications);
-      setUnreadCount(prev => Math.max(0, prev - 1));
       
-      await axios.put(`/api/notifications/${requestId}/read`);
+      // Decrement unread count if notification was unread
+      const notification = notifications.find(n => n.requestId === requestId);
+      if (notification && !notification.read) {
+        setUnreadCount(prev => Math.max(0, prev - 1));
+      }
+  
     } catch (error) {
       console.error(`Failed to ${action} friend request:`, error);
     }

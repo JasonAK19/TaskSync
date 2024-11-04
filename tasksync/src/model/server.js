@@ -339,13 +339,12 @@ app.get('/friend-requests/:userId', async (req, res) => {
   }
 });
 
-// In server.js
+// Update friend request status
 app.put('/friend-requests/:requestId', async (req, res) => {
   const { requestId } = req.params;
   const { status } = req.body;
 
   try {
-    // Update friend request status
     const result = await db.collection('FriendRequest').updateOne(
       { _id: new ObjectId(requestId) },
       { $set: { status } }

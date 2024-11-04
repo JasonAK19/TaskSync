@@ -211,6 +211,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
                 friends.map(friend => (
                   <div key={friend._id} className="friend">
                     <img src={friend.profilePicture || images['defaultpf.jpg']} alt={friend.name} />
+                    <span className="friend-username">{friend.username}</span>
                   </div>
                 ))
               )}
