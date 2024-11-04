@@ -92,13 +92,18 @@
     color: white;
   }
 
+/* Group box related stuff */
+
   .group-section-box {
     background-color: #ECE6F0; 
     padding: 0px 8px 15px;
-    position: relative; /* Ensure the element is positioned relative to its normal position */
-    top: -50px; /* Adjust this value to raise the position */
-    margin-bottom: 100px;
     border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 45px;
+    margin-bottom: 530px;
+    /* Flex grow allows it to take up remaining space if needed */
+    flex-grow: 1;
   }
   
   .group-section {
