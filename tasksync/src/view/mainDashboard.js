@@ -12,6 +12,20 @@ import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
 
+const fetchFromMultipleInstances = async (endpoints) => {
+  for (const endpoint of endpoints) {
+    try {
+      const response = await axios.get(endpoint);
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error(`Failed to fetch from ${endpoint}:`, error);
+    }
+  }
+  throw new Error('All instances failed');
+};
+
 const fetchUserInfo = async (username) => {
   try {
     const response = await fetch(`/user/${username}`);
@@ -38,8 +52,11 @@ const fetchTasks = async (username) => {
 
 const fetchFriends = async (username) => {
   try {
-    const response = await axios.get(`/friends/${username}`);
-    return response.data;
+    const data = await fetchFromMultipleInstances([
+      `http://localhost:3001/friends/${username}`,
+      `http://localhost:3002/friends/${username}`
+    ]);
+    return data;
   } catch (err) {
     console.error('Failed to fetch friends list:', err);
     return [];
@@ -58,6 +75,9 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [isFriendRequestPopUpOpen, setIsFriendRequestPopUpOpen] = useState(false);
 
   useEffect(() => {
+
+    if (!username) return;
+
     const getUserInfo = async () => {
       const user = await fetchUserInfo(username);
       setUserInfo(user);
@@ -134,7 +154,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     <div className="main-dashboard">
       <Sidebar userInfo={userInfo} onLogout={onLogout} onOpenAddGroupPopUp={() => setIsAddGroupPopUpOpen(true)} />
       <div className="main-content">
-        <Header />
+        <Header username={username} />
         <div className="content">
           <section className="task-list-section">
             {tasks.length === 0 ? (
@@ -214,7 +234,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} />
       
       {/* Friend Request Popup */}
-      <FriendRequestPopUp isOpen={isFriendRequestPopUpOpen} onClose={() => setIsFriendRequestPopUpOpen(false)} userId={userId} />
+      <FriendRequestPopUp isOpen={isFriendRequestPopUpOpen} onClose={() => setIsFriendRequestPopUpOpen(false)} currentUser={{username: username}} />
     </div>
   );
 };

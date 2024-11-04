@@ -1,8 +1,9 @@
 import React from 'react';
 import './header.css';
+import PropTypes from 'prop-types';
 import NotificationBell from './notificationBell';
 
-const Header = ({ userId }) => {
+const Header = ({ username }) => {
     return (
         <header className="header">
           <div className="header-title">
@@ -10,7 +11,7 @@ const Header = ({ userId }) => {
           </div>
           <nav className="header-nav">
             <ul className="nav-links">
-             <NotificationBell userId={userId} />
+             <NotificationBell username={username} />
               <li><a href="#home">Home</a></li>
               <li><a href="#event-planning">Event Planning</a></li>
               <li><a href="#collaboration">Collaboration</a></li>
@@ -19,4 +20,8 @@ const Header = ({ userId }) => {
         </header>
       );
     };
+
+Header.propTypes = {
+  username: PropTypes.string.isRequired
+};
 export default Header;

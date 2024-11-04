@@ -1,9 +1,29 @@
-import React, { useState } from 'react';
+// FriendRequestPopUp.js
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
+import PropTypes from 'prop-types';
 import './friendRequestPopUp.css';
 
-const FriendRequestPopUp = ({ isOpen, onClose, userId }) => {
+const socket = io('http://localhost:3000', {
+  transports: ['websocket', 'polling'],
+  reconnection: true,
+  reconnectionAttempts: 5
+});
+
+// Add error handling
+socket.on('connect_error', (error) => {
+  console.log('Socket connection error:', error);
+});
+
+const FriendRequestPopUp = ({ isOpen, onClose, currentUser }) => {
   const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    socket.on('friendRequest', (friendRequest) => {
+      alert(`New friend request from ${friendRequest.fromUserId}`);
+    });
+  }, []);
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
@@ -11,12 +31,29 @@ const FriendRequestPopUp = ({ isOpen, onClose, userId }) => {
 
   const handleSendRequest = async () => {
     try {
-      await axios.post('/friend-requests', { fromUserId: userId, toUsername: username });
+      // Add validation logging
+      console.log('Attempting to send request with:', {
+        currentUser,
+        targetUsername: username
+      });
+  
+      // Validate currentUser
+      if (!currentUser?.username) {
+        throw new Error('Current user session not found');
+      }
+  
+      const response = await axios.post('/friend-requests', { 
+        fromUsername: currentUser.username, 
+        toUsername: username.trim() 
+      });
+  
+      console.log('Friend request response:', response.data);
       alert('Friend request sent!');
       setUsername('');
       onClose();
     } catch (err) {
-      alert('Failed to send friend request: ' + err.response.data.error);
+      console.error('Friend request error:', err);
+      alert(err.message || 'Failed to send friend request');
     }
   };
 
@@ -40,6 +77,14 @@ const FriendRequestPopUp = ({ isOpen, onClose, userId }) => {
       </div>
     </div>
   );
+};
+
+FriendRequestPopUp.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  currentUser: PropTypes.shape({
+    username: PropTypes.string.isRequired
+  }).isRequired
 };
 
 export default FriendRequestPopUp;

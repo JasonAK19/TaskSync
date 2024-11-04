@@ -1,95 +1,117 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import io from 'socket.io-client';
+import PropTypes from 'prop-types';
 import images from '../../assets';
 import './notificationBell.css';
 
-const NotificationBell = ({ userId }) => {
+const socket = io('http://localhost:3000', {
+  transports: ['websocket', 'polling'],
+  reconnection: true
+});
+
+const NotificationBell = ({ username }) => {
   const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [friendRequests, setFriendRequests] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
+    if (!username) {
+      console.log('No username provided');
+      return;
+    }
+
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get(`/notifications/${userId}`);
+        console.log('Fetching notifications for username:', username);
+        const response = await axios.get(`/api/notifications/${username}`);
+        console.log('Received notifications:', response.data);
         setNotifications(response.data);
-        setUnreadCount(response.data.filter(notification => !notification.read).length);
-      } catch (err) {
-        console.error('Failed to fetch notifications:', err);
-      }
-    };
-
-    const fetchFriendRequests = async () => {
-      try {
-        const response = await axios.get(`/friend-requests/${userId}`);
-        setFriendRequests(response.data);
-      } catch (err) {
-        console.error('Failed to fetch friend requests:', err);
+        setUnreadCount(response.data.filter(n => !n.read).length);
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
       }
     };
 
     fetchNotifications();
-    fetchFriendRequests();
-  }, [userId]);
 
-  const handleBellClick = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+    socket.on('newNotification', (notification) => {
+      console.log('New notification received:', notification);
+      if (notification.username === username) {
+        setNotifications(prev => [notification, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      }
+    });
 
-  const markAsRead = async (notificationId) => {
+    return () => socket.off('newNotification');
+  }, [username]);
+
+  const handleFriendRequest = async (requestId, action) => {
     try {
-      await axios.put(`/notifications/${notificationId}/read`);
-      setNotifications(notifications.map(notification =>
-        notification._id === notificationId ? { ...notification, read: true } : notification
-      ));
-      setUnreadCount(unreadCount - 1);
-    } catch (err) {
-      console.error('Failed to mark notification as read:', err);
-    }
-  };
-
-  const handleAcceptRequest = async (requestId) => {
-    try {
-      await axios.put(`/friend-requests/${requestId}`, { status: 'accepted' });
-      setFriendRequests(friendRequests.filter(request => request._id !== requestId));
-    } catch (err) {
-      console.error('Failed to accept friend request:', err);
-    }
-  };
-
-  const handleDeclineRequest = async (requestId) => {
-    try {
-      await axios.put(`/friend-requests/${requestId}`, { status: 'declined' });
-      setFriendRequests(friendRequests.filter(request => request._id !== requestId));
-    } catch (err) {
-      console.error('Failed to decline friend request:', err);
+      console.log('Handling friend request:', requestId, action);
+      await axios.put(`/friend-requests/${requestId}`, { status: action });
+      
+      // Update notification
+      const updatedNotifications = notifications.filter(n => n.requestId !== requestId);
+      setNotifications(updatedNotifications);
+      setUnreadCount(prev => Math.max(0, prev - 1));
+      
+      await axios.put(`/api/notifications/${requestId}/read`);
+    } catch (error) {
+      console.error(`Failed to ${action} friend request:`, error);
     }
   };
 
   return (
     <div className="notification-bell">
-      <img src={images["notification.png"]} alt="notification" onClick={handleBellClick} className="notification-icon" />
-      {unreadCount > 0 && <span className="notification-count">{unreadCount}</span>}
+      <div className="bell-icon" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+        <img 
+          src={images["notification.png"]} 
+          alt="Notifications" 
+          className="notification-icon"
+        />
+        {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+      </div>
+      
       {isDropdownOpen && (
         <div className="notification-dropdown">
-          {notifications.map(notification => (
-            <div key={notification._id} className={`notification-item ${notification.read ? 'read' : 'unread'}`}>
-              <p>{notification.message}</p>
-              {!notification.read && <button onClick={() => markAsRead(notification._id)}>Mark as read</button>}
-            </div>
-          ))}
-          {friendRequests.map(request => (
-            <div key={request._id} className="friend-request-item">
-              <p>Friend request from {request.fromUserId}</p>
-              <button onClick={() => handleAcceptRequest(request._id)}>Accept</button>
-              <button onClick={() => handleDeclineRequest(request._id)}>Decline</button>
-            </div>
-          ))}
+          {notifications.length === 0 ? (
+            <div className="no-notifications">No notifications</div>
+          ) : (
+            notifications.map((notification) => (
+              <div key={notification._id} className={`notification-item ${!notification.read ? 'unread' : ''}`}>
+                <div className="notification-content">
+                  <p>{notification.message}</p>
+                  <span className="notification-time">
+                    {new Date(notification.createdAt).toLocaleString()}
+                  </span>
+                </div>
+                {notification.type === 'friendRequest' && (
+                  <div className="friend-request-actions">
+                    <button 
+                      onClick={() => handleFriendRequest(notification.requestId, 'accepted')}
+                      className="accept-btn"
+                    >
+                      Accept
+                    </button>
+                    <button 
+                      onClick={() => handleFriendRequest(notification.requestId, 'declined')}
+                      className="decline-btn"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>
   );
 };
 
+NotificationBell.propTypes = {
+  username: PropTypes.string.isRequired
+};
 export default NotificationBell;

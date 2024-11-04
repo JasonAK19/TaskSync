@@ -1,7 +1,10 @@
 const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const cors = require('cors'); // Import the CORS middleware
 const deepEmailValidator = require('deep-email-validator');
 const nodemailer = require('nodemailer');
-const crypto = require('crypto')
+const crypto = require('crypto');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 
@@ -12,15 +15,26 @@ const { sendFriendRequest, getFriendRequests, updateFriendRequestStatus } = requ
 const { ObjectId } = require('mongodb');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: {
+    origin: ['http://localhost:3001', 'http://localhost:3002'], // Allow requests from these origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type'],
+    credentials: true
+  }
+});
+
 const port = 3000;
 
+app.use(cors({ origin: ['http://localhost:3001', 'http://localhost:3002'], credentials: true })); // Use the CORS middleware
 app.use(bodyParser.json());
 
 let db;
 
 // nodemailer
 const transporter = nodemailer.createTransport({
-  host: 'Gmail', 
+  host: 'Gmail',
   port: 587, // or 465 for SSL
   secure: false, // true for 465
   auth: {
@@ -28,16 +42,24 @@ const transporter = nodemailer.createTransport({
     pass: 'derpherp90'
   }
 });
+
 // Connect to MongoDB
 connectToDatabase().then(database => {
   db = database;
-  app.listen(port, () => {
+  server.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   });
 }).catch(err => {
   console.error('Failed to connect to MongoDB', err);
 });
 
+io.on('connection', (socket) => {
+  console.log('New client connected');
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
 
 // validate email function
 async function isEmailValid(email) {
@@ -79,8 +101,6 @@ app.post('/register', async (req, res) => {
         console.log('Email sent:', info.response);
       }
     });
-
-
 
     res.status(201).json({ _id: result.insertedId });
   } catch (err) {
@@ -139,7 +159,7 @@ app.get('/user/:username', async (req, res) => {
   try {
     const { username } = req.params;
     const user = await db.collection('User').findOne({ username }, { projection: { _id: 0, username: 1, email: 1 } });
-    
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
@@ -162,7 +182,7 @@ app.post('/tasks', async (req, res) => {
   }
 });
 
-//Edit an existing task
+// Edit an existing task
 app.put('/tasks/:taskId', async (req, res) => {
   const { taskId } = req.params;
   const updatedTask = req.body;
@@ -208,7 +228,6 @@ app.delete('/tasks/:taskId', async (req, res) => {
   }
 });
 
-
 // Fetch user groups
 app.get('/api/user/:username/groups', async (req, res) => {
   try {
@@ -235,64 +254,86 @@ app.post('/api/user/:username/groups', async (req, res) => {
   }
 });
 
-
-// Add a new notification
-app.post('/notifications', async (req, res) => {
-  try {
-    const { userId, message } = req.body;
-    const notification = {
-      userId: new ObjectId(userId),
-      message,
-      read: false,
-      date: new Date()
-    };
-    const notificationId = await createNotification(db, notification);
-    res.status(201).json({ notificationId });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create notification' });
-  }
-});
-
-// Get notifications for a user
-app.get('/notifications/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const notifications = await getNotifications(db, userId);
-    res.status(200).json(notifications);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch notifications' });
-  }
-});
-
-
-// Mark notification as read
-app.put('/notifications/:notificationId/read', async (req, res) => {
-  try {
-    const { notificationId } = req.params;
-    await markAsRead(db, notificationId);
-    res.status(200).json({ message: 'Notification marked as read' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to mark notification as read' });
-  }
-});
-
-// Send a friend request
+// send friend request
 app.post('/friend-requests', async (req, res) => {
+  const { fromUsername, toUsername } = req.body;
+  
   try {
-    const { fromUserId, toUsername } = req.body;
-    const requestId = await sendFriendRequest(db, fromUserId, toUsername);
-    res.status(201).json({ requestId });
+    // Input validation
+    if (!fromUsername || !toUsername) {
+      console.log('Missing required fields:', { fromUsername, toUsername });
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Find sender user
+    const fromUser = await db.collection('User').findOne({ username: fromUsername });
+    if (!fromUser) {
+      console.log('Sender user not found:', fromUsername);
+      return res.status(404).json({ error: 'Sender not found' });
+    }
+
+    // Find recipient user
+    const toUser = await db.collection('User').findOne({ username: toUsername });
+    if (!toUser) {
+      console.log('Target user not found:', toUsername);
+      return res.status(404).json({ error: 'Recipient not found' });
+    }
+
+    // Check if request already exists
+    const existingRequest = await db.collection('FriendRequest').findOne({
+      fromUserId: fromUser._id,
+      toUserId: toUser._id,
+      status: 'pending'
+    });
+
+    if (existingRequest) {
+      console.log('Friend request already exists');
+      return res.status(400).json({ error: 'Friend request already exists' });
+    }
+
+    // Create friend request
+    const friendRequest = {
+      fromUserId: fromUser._id,
+      toUserId: toUser._id,
+      status: 'pending',
+      createdAt: new Date()
+    };
+
+    const requestResult = await db.collection('FriendRequest').insertOne(friendRequest);
+
+    // Create notification
+    const notification = {
+      userId: toUser._id,
+      type: 'friendRequest',
+      requestId: requestResult.insertedId,
+      fromUsername: fromUser.username,
+      message: `${fromUser.username} sent you a friend request`,
+      read: false,
+      createdAt: new Date()
+    };
+
+    await db.collection('Notification').insertOne(notification);
+
+    // Emit notification
+    io.to(toUser._id.toString()).emit('newNotification', notification);
+
+    res.status(201).json({ 
+      message: 'Friend request sent successfully',
+      requestId: requestResult.insertedId 
+    });
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error in friend request:', err);
+    res.status(500).json({ error: 'Failed to send friend request', details: err.message });
   }
 });
 
 // Get friend requests for a user
 app.get('/friend-requests/:userId', async (req, res) => {
+  const { userId } = req.params;
   try {
-    const { userId } = req.params;
-    const requests = await getFriendRequests(db, userId);
-    res.status(200).json(requests);
+    const friendRequests = await db.collection('FriendRequest').find({ toUserId: new ObjectId(userId) }).toArray();
+    res.status(200).json(friendRequests);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch friend requests' });
   }
@@ -300,13 +341,72 @@ app.get('/friend-requests/:userId', async (req, res) => {
 
 // Update friend request status
 app.put('/friend-requests/:requestId', async (req, res) => {
+  const { requestId } = req.params;
+  const { status } = req.body;
+
   try {
-    const { requestId } = req.params;
-    const { status } = req.body;
-    await updateFriendRequestStatus(db, requestId, status);
-    res.status(200).json({ message: 'Friend request status updated' });
+    const result = await db.collection('FriendRequest').updateOne(
+      { _id: new ObjectId(requestId) },
+      { $set: { status } }
+    );
+
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: 'Friend request updated successfully' });
+    } else {
+      res.status(404).json({ error: 'Friend request not found' });
+    }
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update friend request status' });
+    res.status(500).json({ error: 'Failed to update friend request' });
+  }
+});
+
+// Get friends for a user
+app.get('/friends/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await db.collection('User').findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const friends = await db.collection('User').find({ _id: { $in: user.friends } }).toArray();
+    res.status(200).json(friends);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch friends' });
+  }
+});
+
+// Mark notification as read
+app.put('/api/notifications/:notificationId/read', async (req, res) => {
+  try {
+    const result = await db.collection('Notification').updateOne(
+      { _id: new ObjectId(req.params.notificationId) },
+      { $set: { read: true } }
+    );
+    res.status(200).json({ message: 'Notification marked as read' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update notification' });
+  }
+});
+
+// Get notifications for a user
+app.get('/api/notifications/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = await db.collection('User').findOne({ username });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const notifications = await db.collection('Notification')
+      .find({ username })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.status(200).json(notifications);
+  } catch (err) {
+    console.error('Error fetching notifications:', err);
+    res.status(500).json({ error: 'Failed to fetch notifications' });
   }
 });
 

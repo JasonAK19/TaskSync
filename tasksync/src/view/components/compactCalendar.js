@@ -19,7 +19,6 @@ const CompactCalendar = ({ tasks }) => {
       return eventDate === currentDate;
     });
 
-    console.log(`Date: ${moment(arg.date).format('YYYY-MM-DD')}, Has Task: ${hasTask}`);
 
     return (
       <div className="fc-daygrid-day-number">
