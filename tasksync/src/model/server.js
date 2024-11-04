@@ -339,23 +339,43 @@ app.get('/friend-requests/:userId', async (req, res) => {
   }
 });
 
-// Update friend request status
+// In server.js
 app.put('/friend-requests/:requestId', async (req, res) => {
   const { requestId } = req.params;
   const { status } = req.body;
 
   try {
+    // Update friend request status
     const result = await db.collection('FriendRequest').updateOne(
       { _id: new ObjectId(requestId) },
       { $set: { status } }
     );
 
-    if (result.modifiedCount > 0) {
-      res.status(200).json({ message: 'Friend request updated successfully' });
-    } else {
-      res.status(404).json({ error: 'Friend request not found' });
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: 'Friend request not found' });
     }
+
+    // If accepted, add users as friends
+    if (status === 'accepted') {
+      const request = await db.collection('FriendRequest').findOne({ 
+        _id: new ObjectId(requestId) 
+      });
+      
+      // Add each user to the other's friends list
+      await db.collection('User').updateOne(
+        { _id: request.toUserId },
+        { $addToSet: { friends: request.fromUserId } }
+      );
+      
+      await db.collection('User').updateOne(
+        { _id: request.fromUserId },
+        { $addToSet: { friends: request.toUserId } }
+      );
+    }
+
+    res.status(200).json({ message: 'Friend request updated successfully' });
   } catch (err) {
+    console.error('Error updating friend request:', err);
     res.status(500).json({ error: 'Failed to update friend request' });
   }
 });
@@ -392,22 +412,24 @@ app.put('/api/notifications/:notificationId/read', async (req, res) => {
 app.get('/api/notifications/:username', async (req, res) => {
   try {
     const { username } = req.params;
-    const user = await db.collection('User').findOne({ username });
     
+    // First get the user to get their ID
+    const user = await db.collection('User').findOne({ username });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Then find notifications using userId
     const notifications = await db.collection('Notification')
-      .find({ username })
+      .find({ userId: user._id })
       .sort({ createdAt: -1 })
       .toArray();
 
+    console.log('Found notifications:', notifications); // Debug log
     res.status(200).json(notifications);
   } catch (err) {
     console.error('Error fetching notifications:', err);
     res.status(500).json({ error: 'Failed to fetch notifications' });
   }
 });
-
 module.exports = app;
