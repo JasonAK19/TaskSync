@@ -15,26 +15,30 @@
   .profile-section {
     display: flex;
     align-items: center;
-    background-color: #ECE6F0; 
+    background-color: #ECE6F0;
     padding: 10px;
-    margin-bottom: 10px; 
+    margin-bottom: 10px;
     border-radius: 20px;
-  }
+    min-width: 180px; /* Set a minimum width */
+    min-height: 45px;  /* Set a minimum height */
+    overflow: hidden;
+    white-space: nowrap; /* Prevents text from wrapping */
+}
   
   .profile-picture {
-    width: 40px; 
-    height: 40px; 
-    border-radius: 50%; 
-    margin-right: 20px; 
-    margin-left: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px; /* Reduced margin to keep things tight */
   }
   
   .username {
-    font-size: 18px; 
-    color: #615382; 
+    font-size: 18px;
+    color: #615382;
     font-weight: bold;
-
-  }
+    overflow: hidden; /* Hide overflow text */
+    text-overflow: ellipsis; /* Show ellipsis if text is too long */
+}
   
   .edit-profile-btn {
     background-color: #6750A4;
@@ -54,7 +58,8 @@
   }
   
   .bottom-menu{
-    margin-bottom: 20px;
+    margin-top: auto; /* Pushes this section to the bottom of the sidebar */
+    margin-bottom: 15px;
     display: flex;
     flex-direction: column;
   }
@@ -96,14 +101,11 @@
 
   .group-section-box {
     background-color: #ECE6F0; 
-    padding: 0px 8px 15px;
+    padding: 0px 8px 15px; 
     border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    margin-top: 45px;
-    margin-bottom: 530px;
-    /* Flex grow allows it to take up remaining space if needed */
-    flex-grow: 1;
+    margin-top: 10px;
+    max-height: 200px; /* Adjust as needed */
+    overflow-y: auto;
   }
   
   .group-section {
