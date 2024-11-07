@@ -55,9 +55,8 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups, setGrou
         <button className="menu-item">
           <img src={images['merge.png']} alt="merge" className="menu-icon" /> Merge Schedules
         </button>
-      </div>
-
-      {/* Group Section */}
+        
+        {/* Group Section */}
       <div className="group-section-box">
         <div className="group-section">
           <h4 className="group-title">
@@ -77,6 +76,9 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups, setGrou
           </ul>
         </div>
       </div>
+      </div>
+
+      
 
       <div className="bottom-menu">
         <button className="menu-item">
