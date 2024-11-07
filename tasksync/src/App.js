@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 import LandingPage from './view/landingPage';
@@ -11,6 +11,13 @@ function App() {
   const [username, setUsername] = useState('');
   const [userInfo, setUserInfo] = useState(null);
 
+  useEffect(() => {
+    const savedUsername = localStorage.getItem('username');
+    if (savedUsername) {
+      handleLogin(savedUsername);
+    }
+  }, []);
+
   const navigateToAuth = () => {
     setCurrentPage('auth');
   };
@@ -22,6 +29,8 @@ function App() {
       setIsAuthenticated(true);
       setUsername(username);
       setCurrentPage('dashboard');
+
+      localStorage.setItem('username', username);
     } catch (error) {
       console.error('Error fetching user information:', error);
     }
@@ -30,6 +39,9 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentPage('landing');
+    setUsername('');
+    setUserInfo(null);
+    localStorage.removeItem('username');
   };
 
   return (

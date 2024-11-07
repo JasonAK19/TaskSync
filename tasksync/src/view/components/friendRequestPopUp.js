@@ -18,6 +18,8 @@ socket.on('connect_error', (error) => {
 
 const FriendRequestPopUp = ({ isOpen, onClose, currentUser }) => {
   const [username, setUsername] = useState('');
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     socket.on('friendRequest', (friendRequest) => {
@@ -27,9 +29,26 @@ const FriendRequestPopUp = ({ isOpen, onClose, currentUser }) => {
 
   const handleUsernameChange = (e) => {
     setUsername(e.target.value);
+    setError(null);
   };
 
-  const handleSendRequest = async () => {
+  const handleSendRequest = async (e) => {
+    e.preventDefault();
+    
+    // Input validation
+    if (!username.trim()) {
+      setError('Please enter a username');
+      return;
+    }
+
+    if (!currentUser) {
+      setError('You must be logged in to send friend requests');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
     try {
       // Add validation logging
       console.log('Attempting to send request with:', {
@@ -42,7 +61,7 @@ const FriendRequestPopUp = ({ isOpen, onClose, currentUser }) => {
         throw new Error('Current user session not found');
       }
   
-      const response = await axios.post('/friend-requests', { 
+      const response = await axios.post('http://localhost:3001/friend-requests', { 
         fromUsername: currentUser.username, 
         toUsername: username.trim() 
       });

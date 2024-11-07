@@ -5,9 +5,8 @@ import images from '../../assets';
 import myGroupsIcon from '../../assets/myGroups.png';
 import './sidebar.css';
 
-const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp }) => {
+const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups, setGroups }) => {
 
-  const [groups, setGroups] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
 
   useEffect(() => {
@@ -25,7 +24,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp }) => {
     if (userInfo.username) {
       fetchGroups();
     }
-  }, [userInfo.username]);
+  }, [userInfo.username, setGroups]);
 
   const handleAddGroup = (groupName) => {
     setGroups([...groups, { name: groupName }]);

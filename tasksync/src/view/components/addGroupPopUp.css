@@ -59,3 +59,31 @@ h2 {
 .close-popup-btn:hover {
   opacity: 0.9;
 }
+
+.add-users-section {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.user-search-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.add-user-btn {
+  font-size: small;
+  background-color: #615382;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.add-user-btn:hover {
+  opacity: 0.9;
+}
