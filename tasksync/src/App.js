@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router,Routes,Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 import LandingPage from './view/landingPage';
 import AuthPage from './view/authPage';
 import Dashboard from './view/mainDashboard';
+import Sidebar from './view/components/sidebar';
+import GroupPage from './view/groupPage';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('landing');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [userInfo, setUserInfo] = useState(null);
+  const [groups, setGroups] = useState([]);
+
 
   useEffect(() => {
     const savedUsername = localStorage.getItem('username');
@@ -35,6 +40,7 @@ function App() {
       console.error('Error fetching user information:', error);
     }
   };
+  
 
   const handleLogout = () => {
     setIsAuthenticated(false);
@@ -45,13 +51,37 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {currentPage === 'landing' && <LandingPage onNavigate={navigateToAuth} />}
-      {currentPage === 'auth' && <AuthPage onLogin={handleLogin} />}
-      {currentPage === 'dashboard' && isAuthenticated && (
-        <Dashboard username={username} userInfo={userInfo} onLogout={handleLogout} />
-      )}
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={
+            currentPage === 'landing' ? (
+              <LandingPage onNavigate={navigateToAuth} />
+            ) : currentPage === 'auth' ? (
+              <AuthPage onLogin={handleLogin} />
+            ) : currentPage === 'dashboard' && isAuthenticated ? (
+              <Dashboard username={username} userInfo={userInfo} onLogout={handleLogout} />
+            ) : null
+          } />
+          
+          <Route path="/dashboard" element={
+            isAuthenticated ? (
+              <Dashboard username={username} userInfo={userInfo} onLogout={handleLogout} />
+            ) : <Navigate to="/" />
+          } />
+
+          <Route path="/group/:groupId" element={
+            isAuthenticated ? (
+              <>
+                <Sidebar userInfo={userInfo} onLogout={handleLogout} groups={groups} setGroups={setGroups} />
+
+                <GroupPage username = {username}/>
+              </>
+            ) : <Navigate to="/" />
+          } />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

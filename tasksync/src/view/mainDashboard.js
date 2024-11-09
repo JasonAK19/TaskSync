@@ -179,7 +179,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
 
   return (
     <div className="main-dashboard">
-      <Sidebar userInfo={userInfo} onLogout={onLogout} onOpenAddGroupPopUp={() => setIsAddGroupPopUpOpen(true)} />
+      <Sidebar userInfo={userInfo} onLogout={onLogout} onOpenAddGroupPopUp={() => setIsAddGroupPopUpOpen(true)} groups={groups} setGroups={setGroups} />
       <div className="main-content">
         <Header username={username} />
         <div className="content">

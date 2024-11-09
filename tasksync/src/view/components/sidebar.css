@@ -105,7 +105,7 @@
     border-radius: 20px;
     margin-top: 10px;
     max-height: 200px; /* Adjust as needed */
-    overflow-y: auto;
+    overflow: hidden;
   }
   
   .group-section {
@@ -125,20 +125,21 @@
   }
 
   .group-icon {
-    width: 24px; /* Adjust size as needed */
-    height: 24px; /* Adjust size as needed */
-    margin-right: 8px; /* Space between the icon and the title text */
+    width: 24px; 
+    height: 24px; 
+    margin-right: 8px; 
   }
   
   .group-list {
     list-style: none;
     padding-left: 0;
     margin: 0;
+    overflow-y: auto; 
+    overflow-x: hidden; 
   }
-  
+
   .scrollable {
-    max-height: 200px;  /* Limits height to 200px (adjust as needed) */
-    overflow-y: auto;  /* Enables vertical scrolling */
+    max-height: 200px;  
   }
   
   .group-item {
@@ -160,3 +161,32 @@
     color: #615382;
     font-style: italic;
   }
+
+/* scrollbar style */
+::-webkit-scrollbar {
+  width: 12px; 
+
+}
+
+::-webkit-scrollbar-track {
+  background: #ECE6F0; 
+  border-radius: 10px; 
+}
+
+::-webkit-scrollbar-thumb {
+  background: #615382; 
+  border-radius: 10px; 
+  border: 3px solid #ECE6F0; 
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4e416b;
+}
+
+
+.Sidebar,
+.group-section-box,
+.scrollable {
+  scrollbar-width: thin; 
+  scrollbar-color: #615382 #ECE6F0; 
+}

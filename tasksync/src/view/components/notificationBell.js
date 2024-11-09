@@ -75,6 +75,39 @@ const NotificationBell = ({ username }) => {
     }
   };
 
+  const handleGroupInvite = async (groupId, action) => {
+    try {
+      console.log('Handling group invite:', groupId, action);
+      
+      // Update group membership status
+      await axios.put(`/api/groups/${groupId}/members`, {
+        action: action,
+        userId: username
+      });
+      
+      // Find and delete the notification
+      const notificationToDelete = notifications.find(n => n.groupId === groupId);
+      if (notificationToDelete && notificationToDelete._id) {
+        await axios.delete(`/api/notifications/${notificationToDelete._id}`);
+        
+        // Update local notifications state
+        const updatedNotifications = notifications.filter(n => n.groupId !== groupId);
+        setNotifications(updatedNotifications);
+        
+        // Update unread count if needed
+        if (!notificationToDelete.read) {
+          setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+      }
+      
+      // Close dropdown after action
+      setIsDropdownOpen(false);
+  
+    } catch (error) {
+      console.error(`Failed to ${action} group invite:`, error);
+    }
+  };
+
   return (
     <div className="notification-bell">
       <div className="bell-icon" onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
@@ -103,15 +136,21 @@ const NotificationBell = ({ username }) => {
                   <div className="friend-request-actions">
                     <button 
                       onClick={() => handleFriendRequest(notification.requestId, 'accepted')}
-                      className="accept-btn"
-                    >
-                      Accept
-                    </button>
+                      className="accept-btn"> Accept </button>
                     <button 
                       onClick={() => handleFriendRequest(notification.requestId, 'declined')}
-                      className="decline-btn"
-                    >
-                      Decline
+                      className="decline-btn"> Decline </button>
+                  </div>
+                )}
+                {notification.type === 'groupInvite' && (
+                  <div className="friend-request-actions">
+                    <button 
+                      onClick={() => handleGroupInvite(notification.groupId, 'accepted')}
+                      className="accept-btn"> Join
+                    </button>
+                    <button 
+                      onClick={() => handleGroupInvite(notification.groupId, 'declined')}
+                      className="decline-btn"> Decline
                     </button>
                   </div>
                 )}

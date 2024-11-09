@@ -1,0 +1,10 @@
+.group-page {
+    padding: 20px;
+    margin-left: 220px; 
+    background: #fff;
+    min-height: 100vh;
+  }
+  .group-page h1 {
+    color: #333;
+    margin-bottom: 20px;
+  }

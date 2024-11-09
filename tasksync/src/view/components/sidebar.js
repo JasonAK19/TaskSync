@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import AddGroupPopUp from './addGroupPopUp.js';
 import images from '../../assets';
 import myGroupsIcon from '../../assets/myGroups.png';
 import './sidebar.css';
 
-const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups, setGroups }) => {
-
+const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups = [], setGroups }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
+  const navigate = useNavigate();
+  const location = useLocation();
+
 
   useEffect(() => {
     const fetchGroups = async () => {
+      
       try {
         const response = await axios.get(`/api/user/${userInfo.username}/groups`);
         console.log('API Response:', response.data); // Log the API response
@@ -28,6 +33,12 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups, setGrou
 
   const handleAddGroup = (groupName) => {
     setGroups([...groups, { name: groupName }]);
+  };
+
+  const handleGroupClick = (group) => {
+    if (group && group._id) {
+      navigate(`/group/${group._id}`);
+    }
   };
 
   return (
@@ -66,7 +77,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups, setGrou
           <ul className={`group-list ${groups.length > 4 ? 'scrollable' : ''}`}>
             {groups.length > 0 ? (
               groups.map((group, index) => (
-                <li key={index} className="group-item">
+                <li key={index} className="group-item" onClick={() => handleGroupClick(group)}>
                   {group.name}
                 </li>
               ))

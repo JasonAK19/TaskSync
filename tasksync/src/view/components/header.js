@@ -1,6 +1,7 @@
 import React from 'react';
 import './header.css';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import NotificationBell from './notificationBell';
 
 const Header = ({ username, notifications, setNotifications, unreadCount, setUnreadCount }) => {
@@ -18,7 +19,7 @@ const Header = ({ username, notifications, setNotifications, unreadCount, setUnr
              unreadCount={unreadCount}
              setUnreadCount={setUnreadCount}
               />
-              <li><a href="#home">Home</a></li>
+              <li><Link to="/dashboard">Home</Link></li>
               <li><a href="#event-planning">Event Planning</a></li>
               <li><a href="#collaboration">Collaboration</a></li>
             </ul>

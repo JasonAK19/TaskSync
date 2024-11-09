@@ -178,7 +178,8 @@
 .friends-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
+  padding: 10px;
 }
 
 .friend {
@@ -200,6 +201,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
 }
 .friend-buttons {
   margin-top: 10px;
@@ -233,4 +235,17 @@
   border-radius: 12px;
 }
 
+.friends-section .friend {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  width: 200px;
+}
 
+.friends-section .friend .friend-username {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Take remaining width */
+  flex: 1;
+}

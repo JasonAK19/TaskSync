@@ -62,7 +62,9 @@ h2 {
 
 .add-users-section {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  gap: 15px;
   margin-bottom: 15px;
 }
 
@@ -86,4 +88,118 @@ h2 {
 
 .add-user-btn:hover {
   opacity: 0.9;
+}
+
+.user-search-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  background: white;
+}
+
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding-right: 8px;
+}
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.dropdown-toggle::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border: solid #666;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+
+.dropdown-toggle.open::after {
+  transform: rotate(-135deg);
+}
+
+.friends-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: none;
+}
+
+.friends-dropdown.open {
+  display: block;
+}
+
+.friend-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.friend-item:hover {
+  background-color: #f0f0f0;
+}
+
+.no-friends {
+  padding: 8px 12px;
+  color: #666;
+  font-style: italic;
+  text-align: center;
+}
+
+.selected-user-tag {
+  display: inline-flex;
+  align-items: center;
+  background: #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 16px;
+  margin: 4px;
+  font-size: 14px;
+}
+
+.selected-user-tag button {
+  background: none;
+  border: none;
+  margin-left: 4px;
+  cursor: pointer;
+  color: #666;
+  font-size: 12px;
+}
+
+.selected-user-tag button:hover {
+  color: #333;
+}
+
+.selected-users {
+  width: 100%;
+  min-height: 40px;
+  padding: 5px;
+  border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }

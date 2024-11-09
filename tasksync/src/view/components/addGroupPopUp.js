@@ -1,41 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './addGroupPopUp.css';
 
 const AddGroupPopUp = ({ isOpen, onClose, onAddGroup, currentUser }) => {
   const [groupName, setGroupName] = useState('');
   const [searchUser, setSearchUser] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  useEffect(() => {
+    const fetchFriends = async () => {
+      try {
+        console.log('Fetching friends for user:', currentUser);
+        const data = await Promise.race([
+          axios.get(`http://localhost:3001/friends/${currentUser}`),
+          axios.get(`http://localhost:3002/friends/${currentUser}`)
+        ]);
+        
+        const friendsList = Array.isArray(data.data) ? data.data : [];
+        console.log('Processed friends list:', friendsList);
+        setFriends(friendsList);
+      } catch (error) {
+        console.error('Failed to fetch friends:', error);
+        console.error('Error details:', error.response?.data);
+      }
+    };
+
+    if (currentUser) {
+      fetchFriends();
+    } else {
+      console.warn('No currentUser provided to AddGroupPopUp');
+    }
+  }, [currentUser]);
 
   const handleGroupNameChange = (e) => {
     setGroupName(e.target.value);
   };
 
-  const handleAddGroup = async () => {
-    if (groupName.trim()) {
-      const newGroup = {
-        name: groupName,
-        creator: currentUser,
-        members: [...selectedUsers, currentUser],
-        createdAt: new Date()
-      };
-      
-      await onAddGroup(newGroup);
+  const handleUserSelect = (username) => {
+    if (!selectedUsers.includes(username)) {
+      setSelectedUsers([...selectedUsers, username]);
+    }
+    setSearchUser('');
+    setShowDropdown(false);
+  };
+
+  const handleRemoveUser = (username) => {
+    setSelectedUsers(selectedUsers.filter(user => user !== username));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!groupName.trim()) {
+      alert('Please enter a group name');
+      return;
+    }
+    if (selectedUsers.length === 0) {
+      alert('Please add at least one friend to the group');
+      return;
+    }
+
+    const groupData = {
+      name: groupName,
+      members: [...selectedUsers, currentUser],
+      creator: currentUser
+    };
+
+    try {
+      await onAddGroup(groupData);
       setGroupName('');
       setSelectedUsers([]);
       onClose();
+    } catch (error) {
+      console.error('Error creating group:', error);
+      alert('Failed to create group. Please try again.');
     }
   };
 
-  const handleAddUser = () => {
-    if (searchUser && !selectedUsers.includes(searchUser)) {
-      setSelectedUsers([...selectedUsers, searchUser]);
-      setSearchUser('');
-    }
-  };
-
-  const removeUser = (userToRemove) => {
-    setSelectedUsers(selectedUsers.filter(user => user !== userToRemove));
-  };
+  const filteredFriends = friends.filter(friend =>
+    friend.username.toLowerCase().includes(searchUser.toLowerCase()) &&
+    !selectedUsers.includes(friend.username)
+  );
 
   if (!isOpen) return null;
 
@@ -52,28 +98,65 @@ const AddGroupPopUp = ({ isOpen, onClose, onAddGroup, currentUser }) => {
         />
         
         <div className="add-users-section">
-          <input
-            type="text"
-            placeholder="Add user by username"
-            value={searchUser}
-            onChange={(e) => setSearchUser(e.target.value)}
-            className="user-search-input"
-          />
-          <button onClick={handleAddUser} className="add-user-btn">Add User</button>
-        </div>
-
-        <div className="selected-users">
-          {selectedUsers.map(user => (
-            <div key={user} className="selected-user-tag">
-              {user}
-              <button onClick={() => removeUser(user)}>&times;</button>
+          <div className="user-search-container">
+            <div className="search-input-container">
+              <input
+                type="text"
+                placeholder="Add friends to group"
+                value={searchUser}
+                onChange={(e) => {
+                  setSearchUser(e.target.value);
+                  setShowDropdown(true);
+                }}
+                onFocus={() => setShowDropdown(true)}
+                className="search-input"
+              />
+              <button 
+                type="button"
+                className={`dropdown-toggle ${showDropdown ? 'open' : ''}`}
+                onClick={() => setShowDropdown(!showDropdown)}
+              />
             </div>
-          ))}
+
+            <div className={`friends-dropdown ${showDropdown ? 'open' : ''}`}>
+              {filteredFriends.length > 0 ? (
+                filteredFriends.map(friend => (
+                  <div
+                    key={friend._id}
+                    className="friend-item"
+                    onClick={() => handleUserSelect(friend.username)}
+                  >
+                    {friend.username}
+                  </div>
+                ))
+              ) : (
+                <div className="no-friends">No friends found</div>
+              )}
+            </div>
+          </div>
+
+          <div className="selected-users">
+            {selectedUsers.map(username => (
+              <span key={username} className="selected-user-tag">
+                {username}
+                <button 
+                  type="button"
+                  onClick={() => handleRemoveUser(username)}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
         </div>
 
         <div className="popup-actions">
-          <button className="add-group-btn" onClick={handleAddGroup}>Create Group</button>
-          <button className="close-popup-btn" onClick={onClose}>Cancel</button>
+          <button onClick={handleSubmit} className="add-group-btn">
+            Create Group
+          </button>
+          <button onClick={onClose} className="close-popup-btn">
+            Cancel
+          </button>
         </div>
       </div>
     </div>
