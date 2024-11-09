@@ -203,6 +203,8 @@ app.post('/api/groups', async (req, res) => {
       name,
       creator,
       members,
+      tasks: [],
+      events: [],
       createdAt: new Date()
     };
 

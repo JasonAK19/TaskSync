@@ -63,7 +63,7 @@ function App() {
               <Dashboard username={username} userInfo={userInfo} onLogout={handleLogout} />
             ) : null
           } />
-          
+
           <Route path="/dashboard" element={
             isAuthenticated ? (
               <Dashboard username={username} userInfo={userInfo} onLogout={handleLogout} />
