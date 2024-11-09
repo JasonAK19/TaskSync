@@ -1,10 +1,9 @@
-/* groupPage.css */
 
 .header {
     position: fixed !important;
     top: 0;
-    left: 250px !important; /* Base position starting after sidebar */
-    transform: translateX(-25px) !important; /* Adjust this value for fine control */
+    left: 250px !important;
+    transform: translateX(-25px) !important; 
     width: calc(100% - 250px);
     z-index: 100;
     background-color: #fff;
@@ -14,8 +13,8 @@
     padding: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-    margin-left: 250px; /* Adjust this value to match your sidebar width */
-    width: calc(100% - 250px); /* Subtract sidebar width from total width */
+    margin-left: 250px; 
+    width: calc(100% - 250px); 
 
   }
   
