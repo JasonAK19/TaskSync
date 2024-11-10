@@ -109,7 +109,13 @@ const GroupPage = ({username}) => {
                             <div key={task.id} className="task-item">
                                 <h4>{task.title}</h4>
                                 <p>Assigned to: {task.assignedTo}</p>
-                                <p>Due: {new Date(task.dueDate).toLocaleDateString()}</p>
+                                <p>Due: {new Date(task.date).toLocaleDateString(
+                                    'en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    }
+                                )} at {task.time}</p>
                             </div>
                         ))}
                     </div>

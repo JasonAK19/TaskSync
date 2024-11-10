@@ -452,7 +452,7 @@ app.post('/api/groups/:groupId/tasks', async (req, res) => {
     const task = {
       title,
       description, 
-      date,
+      date: new Date(date + 'T' + time),
       time,
       groupId: new ObjectId(groupId),
       assignedTo,
@@ -476,7 +476,12 @@ app.get('/api/groups/:groupId/tasks', async (req, res) => {
       .find({ groupId: new ObjectId(groupId) })
       .sort({ date: 1, time: 1 })
       .toArray();
-    res.status(200).json(tasks);
+
+    const formattedTasks = tasks.map(task => ({
+        ...task,
+        date: task.date.toISOString() // Ensure date is in ISO format
+      }))
+    res.status(200).json(formattedTasks);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch group tasks' });
   }
