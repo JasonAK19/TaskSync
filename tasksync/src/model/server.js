@@ -442,4 +442,63 @@ app.get('/api/notifications/:username', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch notifications' });
   }
 });
+
+// Create group task
+app.post('/api/groups/:groupId/tasks', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { title, description, date, time, assignedTo, createdBy } = req.body;
+
+    const task = {
+      title,
+      description, 
+      date,
+      time,
+      groupId: new ObjectId(groupId),
+      assignedTo,
+      createdBy,
+      status: 'pending',
+      createdAt: new Date()
+    };
+
+    const result = await db.collection('tasks').insertOne(task);
+    res.status(201).json({ taskId: result.insertedId });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create group task' });
+  }
+});
+
+// Get tasks for a group
+app.get('/api/groups/:groupId/tasks', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const tasks = await db.collection('tasks')
+      .find({ groupId: new ObjectId(groupId) })
+      .sort({ date: 1, time: 1 })
+      .toArray();
+    res.status(200).json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch group tasks' });
+  }
+});
+
+// Get group information
+app.get('/api/groups/:groupId', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    
+    const group = await db.collection('Group').findOne(
+      { _id: new ObjectId(groupId) }
+    );
+
+    if (!group) {
+      return res.status(404).json({ error: 'Group not found' });
+    }
+
+    res.status(200).json(group);
+  } catch (err) {
+    console.error('Error fetching group:', err);
+    res.status(500).json({ error: 'Failed to fetch group' });
+  }
+});
 module.exports = app;

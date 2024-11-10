@@ -136,3 +136,17 @@
   .save-btn:hover {
     background-color: #4B3A71;
   }
+
+  .assign-select {
+    width: 100%;
+    padding: 8px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .assign-select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
