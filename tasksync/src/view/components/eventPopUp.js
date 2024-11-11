@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './eventPopUp.css';
-
 const EventPopUp = ({ isOpen, onClose, onSave }) => {
   const [eventData, setEventData] = useState({
     title: '',

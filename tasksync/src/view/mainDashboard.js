@@ -7,7 +7,7 @@ import EditTaskPopUp from "./components/editTaskPopUp";
 import AddGroupPopUp from './components/addGroupPopUp'; 
 import FriendRequestPopUp from './components/friendRequestPopUp';
 import CompactCalendar from './components/compactCalendar';
-
+import EventPopUp from './components/eventPopUp';
 import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
@@ -85,6 +85,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [dropdownVisible, setTaskMenuVisible] = useState(null);
   const [isFriendRequestPopUpOpen, setIsFriendRequestPopUpOpen] = useState(false);
   const [groups, setGroups] = useState([]);
+  const [isEventPopUpOpen, setIsEventPopUpOpen] = useState(false);
 
   useEffect(() => {
 
@@ -177,9 +178,20 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     setTaskMenuVisible(dropdownVisible === taskId ? null : taskId);
   };
 
+  const handleSaveEvent = (eventData) => {
+    // Handle saving the event data
+    console.log('Event Data:', eventData);
+    setIsEventPopUpOpen(false);
+  };
+
   return (
     <div className="main-dashboard">
-      <Sidebar userInfo={userInfo} onLogout={onLogout} onOpenAddGroupPopUp={() => setIsAddGroupPopUpOpen(true)} groups={groups} setGroups={setGroups} />
+      <Sidebar userInfo={userInfo} onLogout={onLogout}
+       onOpenAddGroupPopUp={() => setIsAddGroupPopUpOpen(true)}
+       onOpenEventPopUp={() => setIsEventPopUpOpen(true)}
+        groups={groups} 
+        setGroups={setGroups} />
+
       <div className="main-content">
         <Header username={username} />
         <div className="content">
@@ -263,6 +275,9 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       
       {/* Friend Request Popup */}
       <FriendRequestPopUp isOpen={isFriendRequestPopUpOpen} onClose={() => setIsFriendRequestPopUpOpen(false)} currentUser={{username: username}} />
+
+      {/* Event Popup */}
+      <EventPopUp isOpen={isEventPopUpOpen} onClose={() => setIsEventPopUpOpen(false)} onSave={handleSaveEvent} />
     </div>
   );
 };

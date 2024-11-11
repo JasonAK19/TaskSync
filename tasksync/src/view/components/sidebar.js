@@ -7,7 +7,7 @@ import images from '../../assets';
 import myGroupsIcon from '../../assets/myGroups.png';
 import './sidebar.css';
 
-const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups = [], setGroups }) => {
+const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopUp, groups = [], setGroups }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,7 +55,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, groups = [], se
           <img src={images['calendar.png']} alt="calendar" className="menu-icon" /> Open Full Calendar
         </button>
 
-        <button className="menu-item">
+        <button className="menu-item" onClick = {onOpenEventPopUp} >
           <img src={images['memo.png']} alt="task" className="menu-icon" /> Create Event
         </button>
 
