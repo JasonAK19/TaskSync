@@ -74,6 +74,18 @@ const fetchGroups = async (username) => {
   }
 };
 
+const fetchEvents = async (username) => {
+  try {
+    const response = await axios.get(`/api/events/${username}`);
+    console.log('Events:', response.data);
+    return response.data;
+  } catch (err) {
+    console.error('Failed to fetch events:', err);
+    return [];
+  }
+};
+
+
 const MainDashboard = ({ username, userId, onLogout }) => {
   const [userInfo, setUserInfo] = useState({ username: '', email: '' });
   const [tasks, setTasks] = useState([]);
@@ -86,6 +98,8 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [isFriendRequestPopUpOpen, setIsFriendRequestPopUpOpen] = useState(false);
   const [groups, setGroups] = useState([]);
   const [isEventPopUpOpen, setIsEventPopUpOpen] = useState(false);
+  const [events, setEvents] = useState([]);
+
 
   useEffect(() => {
 
@@ -111,6 +125,10 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       setGroups(groups);
     };
     
+    const getEvents = async () => {
+      const events = await fetchEvents(username);
+      setEvents(events);
+    };
 
     if (username) {
       getGroups();
@@ -118,6 +136,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     getUserInfo();
     getTasks();
     getFriends();
+    getEvents();
   }, [username]);
 
   const handleAddTask = async (task) => {
@@ -178,10 +197,14 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     setTaskMenuVisible(dropdownVisible === taskId ? null : taskId);
   };
 
-  const handleSaveEvent = (eventData) => {
-    // Handle saving the event data
-    console.log('Event Data:', eventData);
-    setIsEventPopUpOpen(false);
+  const handleSaveEvent = async (eventData) => {
+    try {
+      const response = await axios.post('/api/events', { ...eventData, createdBy: userId });
+      setEvents([...events, response.data]);
+      setIsEventPopUpOpen(false);
+    } catch (error) {
+      console.error('Failed to save event:', error);
+    }
   };
 
   return (

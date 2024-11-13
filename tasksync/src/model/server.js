@@ -8,9 +8,8 @@ const bcrypt = require('bcrypt');
 
 const connectToDatabase = require('./mongoConnection');
 const { addTask, getTasks, editTask } = require('./taskModel');
-const { createNotification, getNotifications, markAsRead } = require('./notificationModel');
-const { sendFriendRequest, getFriendRequests, updateFriendRequestStatus } = require('./friendRequestModel');
 const { ObjectId } = require('mongodb');
+const { create } = require('domain');
 
 const app = express();
 const server = http.createServer(app);
@@ -506,4 +505,51 @@ app.get('/api/groups/:groupId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch group' });
   }
 });
+
+
+// Create a new event
+app.post('/api/events', async (req, res) => {
+  try {
+    const { title, description, startDateTime, endDateTime, location, isAllDay, reminder, reminderTime, createdBy } = req.body;
+
+    const newEvent = {
+      title,
+      description,
+      startDateTime: new Date(startDateTime),
+      endDateTime: new Date(endDateTime),
+      location,
+      isAllDay,
+      reminder,
+      reminderTime,
+      createdBy:ObjectId(createdBy),
+      createdAt: new Date()
+    };
+
+    const result = await db.collection('Event').insertOne(newEvent);
+    res.status(201).json({ eventId: result.insertedId, ...newEvent });
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).json({ error: 'Failed to create event' });
+  }
+});
+
+/// Fetch events for a user
+app.get('/api/events/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    console.log(`Fetching events for user: ${username}`);
+    const user = await db.collection('User').findOne({ username });
+    if (!user) {
+      console.log(`User not found: ${username}`);
+      return res.status(404).json({ error: 'User not found' });
+    }
+    const events = await db.collection('Event').find({ createdBy: user._id }).toArray();
+    console.log(`Found ${events.length} events for user: ${username}`);
+    res.status(200).json(events);
+  } catch (err) {
+    console.error('Failed to fetch events:', err);
+    res.status(500).json({ error: 'Failed to fetch events' });
+  }
+});
+
 module.exports = app;

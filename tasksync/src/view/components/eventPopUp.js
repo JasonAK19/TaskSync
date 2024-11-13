@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import './eventPopUp.css';
+
 const EventPopUp = ({ isOpen, onClose, onSave }) => {
   const [eventData, setEventData] = useState({
     title: '',
@@ -14,13 +16,22 @@ const EventPopUp = ({ isOpen, onClose, onSave }) => {
     reminderTime: 15
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave({
+    const eventPayload = {
       ...eventData,
       startDateTime: `${eventData.startDate}T${eventData.startTime}`,
       endDateTime: `${eventData.endDate}T${eventData.endTime}`
-    });
+    };
+
+    try {
+      const response = await axios.post('/api/events', eventPayload);
+      console.log('Event created:', response.data);
+      onSave(response.data);
+    } catch (error) {
+      console.error('Failed to create event:', error);
+    }
+
     onClose();
   };
 

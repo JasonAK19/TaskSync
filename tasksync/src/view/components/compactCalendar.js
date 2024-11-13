@@ -4,21 +4,34 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import moment from 'moment';
 import './compactCalendar.css';
 
-const CompactCalendar = ({ tasks }) => {
-  const events = tasks.map(task => ({
+const CompactCalendar = ({ tasks = [], events = [] }) => {
+
+  const taskEvents = tasks.map(task => ({
     id: task._id,
     title: task.title,
     start: task.date,
     end: task.date,
+    className: 'task-event'
   }));
 
+
+  const calendarEvents = events.map(event => ({
+    id: event._id,
+    title: event.title,
+    start: event.startDateTime,
+    end: event.endDateTime,
+    className: 'calendar-event'
+  }));
+
+  const allEvents = [...taskEvents, ...calendarEvents];
+
   const dayCellContent = (arg) => {
-    const hasTask = events.some(event => {
+    const hasTask = allEvents.some(event => {
       const eventDate = moment(event.start).format('YYYY-MM-DD');
       const currentDate = moment(arg.date).format('YYYY-MM-DD');
       return eventDate === currentDate;
     });
-
+  
 
     return (
       <div className="fc-daygrid-day-number">
@@ -29,9 +42,8 @@ const CompactCalendar = ({ tasks }) => {
 
   const eventContent = (arg) => {
     return (
-      <div className="custom-event">
+      <div className= {`custom-event ${arg.event.classNames}`}>
         <span className="event-dot"></span>
-
         <span className="event-title">{arg.event.title}</span>
       </div>
     );
@@ -42,7 +54,7 @@ const CompactCalendar = ({ tasks }) => {
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"
-        events={events}
+        events={allEvents}
         headerToolbar={{
           left: 'title',
           right: 'prev,next'

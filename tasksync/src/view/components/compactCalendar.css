@@ -45,7 +45,6 @@
   border-radius: 50%;
 }
 
-/* Adjust event title styling */
 .compact-calendar .fc .fc-event-title {
   font-size: 0.8rem;
   white-space: nowrap;
@@ -53,12 +52,10 @@
   text-overflow: ellipsis;
 }
 
-/* Optional: Remove borders between day cells */
 .compact-calendar .fc .fc-daygrid-day {
   border: none;
 }
 
-/* Minimalist styling for buttons */
 .compact-calendar .fc .fc-button {
   background: transparent;
   color: #555;
@@ -82,12 +79,12 @@
 }
 
 .task-marker {
-  color: #8a2be2; /* Customize the color as needed */
+  color: #8a2be2; 
   font-size: 1.2rem;
   vertical-align: middle;
-  margin-right: 5px; /* Space between the marker and the date */
+  margin-right: 5px; 
   position: absolute;
-  right: 25px; /* Adjust the position as needed */
+  right: 25px;
 }
 
 .custom-event {
@@ -96,10 +93,10 @@
 }
 
 .event-dot {
-  background-color: #8a2be2; /* Customize the color as needed */
-  width: 10px; /* Adjust the size as needed */
-  height: 10px; /* Adjust the size as needed */
-  border-radius: 50%; /* Make it circular */
+  background-color: #8a2be2; 
+  width: 10px; 
+  height: 10px;
+  border-radius: 50%;
   margin-right: 5px;
 }
 
@@ -109,3 +106,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
