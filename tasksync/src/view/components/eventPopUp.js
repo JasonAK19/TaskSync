@@ -23,15 +23,7 @@ const EventPopUp = ({ isOpen, onClose, onSave }) => {
       startDateTime: `${eventData.startDate}T${eventData.startTime}`,
       endDateTime: `${eventData.endDate}T${eventData.endTime}`
     };
-
-    try {
-      const response = await axios.post('/api/events', eventPayload);
-      console.log('Event created:', response.data);
-      onSave(response.data);
-    } catch (error) {
-      console.error('Failed to create event:', error);
-    }
-
+    onSave(eventPayload);
     onClose();
   };
 
