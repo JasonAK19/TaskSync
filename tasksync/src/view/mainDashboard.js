@@ -199,7 +199,10 @@ const MainDashboard = ({ username, userId, onLogout }) => {
 
   const handleSaveEvent = async (eventData) => {
     try {
-      const response = await axios.post('/api/events', { ...eventData, createdBy: userId });
+      const response = await axios.post('/api/events', { 
+        ...eventData, 
+        createdBy: username
+      });
       setEvents([...events, response.data]);
       setIsEventPopUpOpen(false);
     } catch (error) {

@@ -521,12 +521,13 @@ app.post('/api/events', async (req, res) => {
       isAllDay,
       reminder,
       reminderTime,
-      createdBy:ObjectId(createdBy),
+      createdBy: createdBy,
       createdAt: new Date()
     };
 
     const result = await db.collection('Event').insertOne(newEvent);
     res.status(201).json({ eventId: result.insertedId, ...newEvent });
+    console.log('Event created:', newEvent);
   } catch (error) {
     console.error('Error creating event:', error);
     res.status(500).json({ error: 'Failed to create event' });
@@ -538,16 +539,33 @@ app.get('/api/events/:username', async (req, res) => {
   try {
     const { username } = req.params;
     console.log(`Fetching events for user: ${username}`);
+
     const user = await db.collection('User').findOne({ username });
     if (!user) {
       console.log(`User not found: ${username}`);
       return res.status(404).json({ error: 'User not found' });
     }
-    const events = await db.collection('Event').find({ createdBy: user._id }).toArray();
+
+    const events = await db.collection('Event').find({ createdBy: username}).toArray();
     console.log(`Found ${events.length} events for user: ${username}`);
     res.status(200).json(events);
   } catch (err) {
     console.error('Failed to fetch events:', err);
+    res.status(500).json({ error: 'Failed to fetch events' });
+  }
+});
+
+app.get('/api/events/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    console.log('Fetching events for user:', username); 
+
+    const events = await db.collection('Events').find({ createdBy: username }).toArray();
+    console.log('Events found:', events); 
+
+    res.status(200).json(events);
+  } catch (error) {
+    console.error('Error fetching events:', error);
     res.status(500).json({ error: 'Failed to fetch events' });
   }
 });
