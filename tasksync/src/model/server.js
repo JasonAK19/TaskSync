@@ -139,6 +139,12 @@ app.get('/user/:username', async (req, res) => {
 // Add a new task
 app.post('/tasks', async (req, res) => {
   const { username, task } = req.body;
+
+  //validation for task title
+  if (!task.title || task.title.trim() === '') {
+    return res.status(400).json({ error: 'Invalid task title.' });
+  }
+
   try {
     const taskId = await addTask(username, task);
     res.status(201).json({ taskId });
@@ -151,6 +157,11 @@ app.post('/tasks', async (req, res) => {
 app.put('/tasks/:taskId', async (req, res) => {
   const { taskId } = req.params;
   const updatedTask = req.body;
+
+  //validation for task title
+  if (!updatedTask.title || updatedTask.title.trim() === '') {
+    return res.status(400).json({ error: 'Invalid task title.' });
+  }
 
   try {
     const result = await editTask(new ObjectId(taskId), updatedTask);

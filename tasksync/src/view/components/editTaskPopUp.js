@@ -7,6 +7,7 @@ const EditTaskPopUp = ({ isOpen, closeModal, onSave, onDelete, task }) => {
   const [taskTime, setTaskTime] = useState("");
   const [taskDate, setTaskDate] = useState("");
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen && task) {
@@ -14,10 +15,15 @@ const EditTaskPopUp = ({ isOpen, closeModal, onSave, onDelete, task }) => {
       setTaskDescription(task.description);
       setTaskTime(task.time);
       setTaskDate(task.date);
+      setError("");
     }
   }, [task, isOpen]);
 
   const handleSave = () => {
+    if (!taskTitle.trim()) {
+      setError("Please Enter a Valid Task Title.");
+      return;
+    }
     const updatedTask = {
       title: taskTitle,
       description: taskDescription,
@@ -58,6 +64,8 @@ const EditTaskPopUp = ({ isOpen, closeModal, onSave, onDelete, task }) => {
             onChange={(e) => setTaskTitle(e.target.value)}
             className="task-title-input" 
           />
+          
+          {error && <p className="error-message">{error}</p>}
 
           <div className="date-time">
             <input

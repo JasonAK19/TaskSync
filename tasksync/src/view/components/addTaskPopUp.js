@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./addTaskPopUp.css"; 
 
 const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
@@ -19,8 +19,24 @@ const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
   const [taskTime, setTaskTime] = useState(getCurrentTime());
   const [taskDate, setTaskDate] = useState(getCurrentDate());
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [error, setError] = useState(""); //state for error message
+
+  useEffect(() => {
+    if (isOpen) {
+      setError(""); // Clear error message when the modal opens
+      setTaskTitle(""); // Clear task title
+      setTaskDescription(""); // Clear task description
+      setTaskTime(getCurrentTime()); // Reset time
+      setTaskDate(getCurrentDate()); // Reset date
+    }
+  }, [isOpen]);
 
   const handleSave = () => {
+    if (!taskTitle.trim()) {
+      setError("Please Enter a Valid Task Title."); //setting error message
+      return;
+    }
+
     const task = {
       title: taskTitle,
       description: taskDescription,
@@ -58,6 +74,8 @@ const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
             onChange={(e) => setTaskTitle(e.target.value)}
             className="task-title-input" 
           />
+          
+          {error && <p className="error-message">{error}</p>} 
 
           <div className="date-time">
             <input
