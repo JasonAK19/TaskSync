@@ -71,8 +71,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopU
       <div className="group-section-box">
         <div className="group-section">
           <h4 className="group-title">
-            <img src={myGroupsIcon} alt="My Groups" className="group-icon" /> 
-            Your Groups
+            <img src={myGroupsIcon} alt="My Groups" className="group-icon" /> Your Groups
           </h4>
           <ul className={`group-list ${groups.length > 4 ? 'scrollable' : ''}`}>
             {groups.length > 0 ? (

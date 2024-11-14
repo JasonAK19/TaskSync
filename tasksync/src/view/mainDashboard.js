@@ -215,46 +215,56 @@ const MainDashboard = ({ username, userId, onLogout }) => {
         groups={groups} 
         setGroups={setGroups} />
 
-      <div className="main-content">
-        <Header username={username} />
-        <div className="content">
-          <section className="task-list-section">
-            {tasks.length === 0 ? (
-              <div className="task">
-                <div className="task-icon"></div>
-                <div className="task-details">
-                  <h4>No Tasks Yet</h4>
-                  <p>Select the plus icon to add a task</p>
-                </div>
-                <div className="task-options">
-                  <button className="task-menu">...</button>
-                </div>
-              </div>
-            ) : (
-              tasks.map(task => (
-                <div key={task._id} className="task">
-                  <div className="task-icon"></div>
-                  <div className="task-details">
-                    <h4>{task.title}</h4>
-                    <p>{task.description}</p>
-                  </div>
-                  <div className="task-options">
-                    <button onClick={() => toggleTaskMenu(task._id)} className="task-menu">...</button>
-                      {dropdownVisible === task._id && (
-                        <div className="dropdown-menu">
-                          <button onClick={() => openEditTaskPopup(task)}>Edit</button>
-                          <button onClick={() => handleDelete(task._id)}>Delete</button>
-                        </div>
-                      )}
-                  </div>
-                </div>
-              ))
-            )}
-            <div className="add-task-button">
-              <button onClick={() => setIsAddTaskPopUpOpen(true)}>
-                <img src={images['plus.png']} alt="Add Task" />
-              </button>
+<div className="main-content">
+  <Header username={username} />
+  <div className="content">
+    <div className="add-task-button">
+      <button className="add-new-task" onClick={() => setIsAddTaskPopUpOpen(true)}> Add New Tasks</button>
+    </div>
+    
+    <section className="task-section-box">
+      <h3 className="task-box-title">Your Tasks</h3>
+
+      {/* Conditionally add 'scrollable' class if there are tasks */}
+      <div className={`task-list-section ${tasks.length > 0 ? 'scrollable' : ''}`}>
+        {tasks.length === 0 ? (
+          <div className="task">
+            <div className="task-icon"></div>
+            <div className="task-details">
+              <h4>No Tasks Yet</h4>
+              <p>Select the plus icon to add a task</p>
             </div>
+            <div className="task-options">
+              <button className="task-menu">...</button>
+            </div>
+          </div>
+        ) : (
+          tasks.map(task => (
+            <div key={task._id} className="task">
+              
+              <div className="task-details">
+                <h4>{task.title}</h4>
+                <p>{task.description}</p>
+              </div>
+              <div className="task-date">
+                <h4>{task.date}</h4>
+                <h4>{task.time}</h4>
+              </div>
+              <div className="task-options">
+                <button onClick={() => toggleTaskMenu(task._id)} className="task-menu">...</button>
+                {dropdownVisible === task._id && (
+                  <div className="dropdown-menu">
+                    <button onClick={() => openEditTaskPopup(task)}>Edit</button>
+                    <button onClick={() => handleDelete(task._id)}>Delete</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+  
 
 
              {/* Calendar Section */}
@@ -262,9 +272,13 @@ const MainDashboard = ({ username, userId, onLogout }) => {
             <CompactCalendar tasks={tasks} />
           </section>
 
-          </section>
           {/* Friends Section */}
-          <section className="friends-section">
+          <div className="friends-section">
+            {/* Friends Section Buttons */}
+          <div className="friend-buttons">
+            <button className="add-new" onClick={() => setIsFriendRequestPopUpOpen(true)}>Add New Friends</button>
+              <button className="show-all">Show All Friends</button>
+            </div>
             <h3>Friends</h3>
             <div className="friends-list">
               {friends.length === 0 ? (
@@ -278,11 +292,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
                 ))
               )}
             </div>
-            <div className="friend-buttons">
-            <button className="add-new" onClick={() => setIsFriendRequestPopUpOpen(true)}>Add New</button>
-              <button className="show-all">Show All</button>
-            </div>
-          </section>
+          </div>
          
         </div>
       </div>
