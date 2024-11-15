@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from './components/header';
 import AddGroupTaskPopup from './components/addGroupTaskPopUp';
+import EditGroupTaskPopup from './components/editGroupTaskPopUp';
 import axios from 'axios';
 import './groupPage.css';
 
@@ -19,6 +20,9 @@ const GroupPage = ({username}) => {
         assignedTo: ''
       });
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
+    const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
+    const [taskToEdit, setTaskToEdit] = useState(null);
+    const [tasks, setTasks] = useState([]);
 
 
     // Fetch group data on mount
@@ -58,10 +62,7 @@ const GroupPage = ({username}) => {
 
   const handleAddTask = async (taskData) => {
     try {
-      await axios.post(`/api/groups/${groupId}/tasks`, {
-        ...taskData,
-        createdBy: username
-      });
+      await axios.post(`/api/groups/${groupId}/tasks`, {...taskData, createdBy: username});
       // Refresh tasks
       const response = await axios.get(`/api/groups/${groupId}/tasks`);
       setGroupTasks(response.data);
@@ -70,6 +71,46 @@ const GroupPage = ({username}) => {
       console.error('Failed to add task:', error);
     }
   };
+
+  const openEditTaskPopup = (task) => {
+    setTaskToEdit(task);
+    setIsEditTaskOpen(true);
+  };
+
+  const handleEditTask = async (taskId, updatedTask) => {
+    try {
+        console.log('Sending updated task:', updatedTask); // Debug updated task
+    
+        // Make a PUT request to update the task on the server
+        const response = await axios.put(`/api/groups/${groupId}/tasks/${taskId}`, updatedTask);
+    
+        console.log('Task successfully updated on the server:', response.data); // Debug server response
+    
+        // Refresh tasks after editing
+        const tasksResponse = await axios.get(`/api/groups/${groupId}/tasks?_=${Date.now()}`);
+        console.log('Fetched updated tasks:', tasksResponse.data); // Debug fetched tasks
+    
+        setGroupTasks(updatedTask);
+        setIsEditTaskOpen(false);
+      } catch (error) {
+        console.error('Failed to edit task:', error.response?.data || error.message); // Debug errors
+      }
+  };
+
+const handleDeleteTask = async (taskId) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this task?");
+    if (!isConfirmed) return;
+    try {
+      const response = await axios.delete(`/api/groups/${groupId}/tasks/${taskId}`);
+      if (response.status === 200) {
+        const updatedTasks = tasks.filter(task => task._id !== taskId);
+        setTasks(updatedTasks);
+      }
+    } catch (err) {
+      console.error('Failed to delete task:', err);
+    }
+};
+
 
     return (
         <div className="group-page">
@@ -100,10 +141,19 @@ const GroupPage = ({username}) => {
                     onSave={handleAddTask}
                     groupMembers={group?.members || []}
                 />
+                <EditGroupTaskPopup
+                    isOpen={isEditTaskOpen}
+                    closeModal={() => setIsEditTaskOpen(false)}
+                    onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} 
+                    onDelete={() => handleDeleteTask(taskToEdit._id)} 
+                    task={taskToEdit}
+                    groupMembers={group?.members || []}
+                />
                     <h3>Group Tasks</h3>
                     <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true) }>
                         Add Task
                         </button>
+                    
                     <div className="tasks-list">
                         {groupTasks.map(task => (
                             <div key={task.id} className="task-item">
@@ -116,6 +166,7 @@ const GroupPage = ({username}) => {
                                         day: 'numeric'
                                     }
                                 )} at {task.time}</p>
+                                <button onClick={() => openEditTaskPopup(task)}>Edit Task</button>
                             </div>
                         ))}
                     </div>
