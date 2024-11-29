@@ -1,0 +1,27 @@
+.full-calendar-page {
+    display: flex;
+    height: 100vh; /* Make the page take up the full viewport height */
+  }
+  
+  .full-calendar-page .main-content {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .full-calendar-page .full-calendar-view {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    margin-top: 60px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .full-calendar-view .fc {
+    flex: 1; /* Make the calendar take up the remaining space */
+  }

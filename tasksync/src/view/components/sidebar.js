@@ -51,7 +51,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopU
       <button className="edit-profile-btn">Edit profile</button>
 
       <div className="menu">
-        <button className="menu-item">
+        <button className="menu-item" onClick={() => navigate('/full-calendar')}>
           <img src={images['calendar.png']} alt="calendar" className="menu-icon" /> Open Full Calendar
         </button>
 
@@ -87,9 +87,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopU
         </div>
       </div>
       </div>
-
-      
-
+      {/* Bottom Menu */}
       <div className="bottom-menu">
         <button className="menu-item">
           <img src={images['setting.png']} alt="settings" className="menu-icon" /> Settings

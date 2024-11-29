@@ -7,6 +7,7 @@ import AuthPage from './view/authPage';
 import Dashboard from './view/mainDashboard';
 import Sidebar from './view/components/sidebar';
 import GroupPage from './view/groupPage';
+import FullCalendarView from './view/fullCalendarView';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('landing');
@@ -77,6 +78,11 @@ function App() {
 
                 <GroupPage username = {username}/>
               </>
+            ) : <Navigate to="/" />
+          } />
+         <Route path="/full-calendar" element={
+            isAuthenticated ? (
+              <FullCalendarView username={username} userInfo={userInfo} onLogout={handleLogout} groups={groups} setGroups={setGroups} />
             ) : <Navigate to="/" />
           } />
         </Routes>
