@@ -62,6 +62,9 @@
 }
 
 .main-dashboard .friend-buttons {
+  position: absolute;
+  top: 130px;
+  left: 650px;
   margin-top: 0px;
   margin-left: 0px; /* Move the friend buttons to the right */
 }
@@ -86,12 +89,13 @@
 
 .main-dashboard .add-task-button {
   position: absolute;
-  top: 170px;
-  left: -200px; /* Move it closer to the left sidebar */
+  top: 240px;
+  left: 600px; /* Move it closer to the left sidebar */
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 20px 0;
+  z-index: 90;
 }
 
 .main-dashboard .add-task-button button {
@@ -112,7 +116,7 @@
 /* Task section box container */
 .main-dashboard .task-section-box {
   position: absolute;
-  width: 45%;
+  width: 89%;
    /* Adjust the width as needed */
   background-color: #ECE6F0;
   border-radius: 12px;
@@ -125,8 +129,10 @@
 
 /* Task list section */
 .main-dashboard .task-list-section {
-  overflow-y: hidden;
+  overflow-x: hidden;
   max-height: 200px;
+  padding-right: 15px;
+  margin-top: 30px;
 }
 
 .main-dashboard .task-list-section.scrollable {
@@ -142,7 +148,7 @@
   margin-bottom: 10px;
   width: 100%; 
   box-sizing: border-box; 
-  margin-right: 1200px;
+  /*margin-right: 1200px;*/
 }
 
 .main-dashboard .task-icon {
@@ -196,6 +202,8 @@
   color: #4A4A4A; /* Adjust the color as desired */
   margin-bottom: 15px; /* Space below the title */
   text-align: center; /* Center the title */
+  position: relative;
+  top: 10px;
 }
 
 .friends-section {
@@ -262,12 +270,13 @@
   justify-content: center; 
   width: 89%; 
   height: 555px;
-  margin-top: 1585px;
+  margin-top: 1650px;
   left: -200px;
   position: absolute; 
   background-color: #F2F0F7; 
   padding: 10px; 
   border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .friends-section .friend {
