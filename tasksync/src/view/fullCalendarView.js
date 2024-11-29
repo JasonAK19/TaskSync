@@ -9,31 +9,52 @@ import Sidebar from './components/sidebar';
 const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) => {
   const [tasks, setTasks] = useState([]);
   const [groupTasks, setGroupTasks] = useState([]);
+  const [groupNames, setGroupNames] = useState({});
 
   useEffect(() => {
     const fetchTasks = async () => {
-      try {
-        const userTasksResponse = await axios.get(`/tasks/${username}`);
-        setTasks(userTasksResponse.data);
-
-        const groupTasksResponse = await axios.get(`/api/user/${username}/groups/tasks`);
-        setGroupTasks(groupTasksResponse.data);
-      } catch (error) {
-        console.error('Failed to fetch tasks:', error);
-      }
-    };
+        try {
+          // Fetch user tasks
+          const userTasksResponse = await axios.get(`/tasks/${username}`);
+          setTasks(userTasksResponse.data);
+      
+          // Fetch all groups first
+          const groupsResponse = await axios.get(`/api/user/${username}/groups`);
+          const userGroups = groupsResponse.data.groups;
+          
+          // Create map of group IDs to names
+          const groupNameMap = {};
+          userGroups.forEach(group => {
+            groupNameMap[group._id] = group.name;
+          });
+          setGroupNames(groupNameMap);
+      
+          // Fetch tasks for each group
+          const allGroupTasksPromises = userGroups.map(group => 
+            axios.get(`/api/groups/${group._id}/tasks`)
+              .then(response => response.data.map(task => ({
+                ...task,
+                groupId: group._id // Add groupId to each task
+              })))
+          );
+          const groupTasksResponses = await Promise.all(allGroupTasksPromises);
+          const allGroupTasks = groupTasksResponses.flatMap(tasks => tasks);
+          
+          setGroupTasks(allGroupTasks);
+        } catch (error) {
+          console.error('Failed to fetch tasks:', error);
+        }
+      };        
 
     fetchTasks();
   }, [username]);
 
   const taskEvents = tasks.map(task => {
     const taskDate = task.date;
-    // Use saved time if it exists, otherwise default to 9:00
     const startDateTime = task.time ? 
       `${taskDate}T${task.time}:00` :
       `${taskDate}T09:00:00`;
       
-    // Set end time 1 hour after start
     const [hours, minutes] = (task.time || '09:00').split(':');
     const endHour = String(Number(hours) + 1).padStart(2, '0');
     const endDateTime = `${taskDate}T${endHour}:${minutes}:00`;
@@ -48,16 +69,24 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
   });
   
   const groupTaskEvents = groupTasks.map(task => {
-    const taskDate = task.date;
-    const startDateTime = `${taskDate}T09:00:00`;
-    const endDateTime = `${taskDate}T10:00:00`;
+    const taskDate = new Date(task.date).toISOString().split('T')[0];
+    const startDateTime = task.time ? 
+      `${taskDate}T${task.time}:00` :
+      `${taskDate}T09:00:00`;
+      
+    const [hours, minutes] = (task.time || '09:00').split(':');
+    const endHour = String(Number(hours) + 1).padStart(2, '0');
+    const endDateTime = `${taskDate}T${endHour}:${minutes}:00`;
   
     return {
       id: task._id,
-      title: task.title,
+      title: `[${groupNames[task.groupId] || 'Group'}] ${task.title}`,
       start: startDateTime,
       end: endDateTime,
-      className: 'group-task-event'
+      className: 'group-task-event',
+      extendedProps: {
+        assignedTo: task.assignedTo
+      }
     };
   });
 
