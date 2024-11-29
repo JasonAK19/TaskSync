@@ -1,6 +1,6 @@
 .full-calendar-page {
     display: flex;
-    height: 100vh; /* Make the page take up the full viewport height */
+    height: 100vh; 
   }
   
   .full-calendar-page .main-content {
@@ -14,7 +14,8 @@
   .full-calendar-page .full-calendar-view {
     flex: 1;
     padding: 20px;
-    background-color: #fff;
+    background-color: #F2F0F7; 
+
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-top: 60px;
@@ -23,5 +24,125 @@
   }
   
   .full-calendar-view .fc {
-    flex: 1; /* Make the calendar take up the remaining space */
+    flex: 1; 
+  }
+  
+  /* FullCalendar styling to match CompactCalendar */
+  .full-calendar-view .fc .fc-toolbar-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #555; 
+    text-align: left;
+  }
+  
+  .full-calendar-view .fc .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .full-calendar-view .fc .fc-daygrid-day-number,
+  .full-calendar-view .fc .fc-timegrid-axis-cushion {
+    font-size: 0.9rem;
+    color: #333;
+    padding: 4px;
+  }
+  
+  .full-calendar-view .fc .fc-daygrid-day:hover .fc-daygrid-day-frame,
+  .full-calendar-view .fc .fc-timegrid-slot:hover {
+    background-color: rgba(138, 43, 226, 0.1); 
+  }
+  
+  .full-calendar-view .fc .fc-daygrid-day-selected .fc-daygrid-day-frame,
+  .full-calendar-view .fc .fc-timegrid-slot-selected {
+    background-color: #8a2be2; 
+    color: white;
+    border-radius: 50%;
+  }
+  
+  .full-calendar-view .fc .fc-event-title {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .full-calendar-view .fc .fc-daygrid-day,
+  .full-calendar-view .fc .fc-timegrid-slot {
+    border: none;
+  }
+  
+  .full-calendar-view .fc .fc-button {
+    background: transparent;
+    color: #555;
+    font-size: 0.8rem;
+    padding: 0 5px;
+    border: none;
+    box-shadow: none;
+  }
+  
+  .full-calendar-view .fc .fc-button:hover {
+    color: #8a2be2;
+  }
+  
+  .full-calendar-view .fc .task-marker {
+    color: #8a2be2; 
+    font-size: 1.2rem;
+    vertical-align: middle;
+    margin-right: 5px; 
+    position: absolute;
+    right: 25px;
+  }
+  
+  .full-calendar-view .fc .custom-event {
+    display: flex;
+    align-items: center;
+  }
+  
+  .full-calendar-view .fc .event-dot {
+    background-color: #8a2be2; 
+    width: 10px; 
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  
+  .full-calendar-view .fc .event-title {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+.full-calendar-view .custom-event {
+    display: flex;
+    align-items: center;
+    padding: 2px 4px;
+  }
+  
+  .full-calendar-view .event-dot {
+    background-color: #8a2be2;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+    flex-shrink: 0;
+  }
+  
+  .full-calendar-view .event-title {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .full-calendar-view .task-event {
+    background-color: rgba(138, 43, 226, 0.1);
+    border: 1px solid #8a2be2;
+    border-radius: 4px;
+  }
+  
+  .full-calendar-view .group-task-event {
+    background-color: rgba(97, 83, 130, 0.1);
+    border: 1px solid #615382;
+    border-radius: 4px;
   }
