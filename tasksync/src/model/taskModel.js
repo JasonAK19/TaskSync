@@ -15,7 +15,7 @@ async function connectToDatabase() {
 async function addTask(username, task) {
   const db = await connectToDatabase();
   const collection = db.collection('tasks');
-  const result = await collection.insertOne({ username, ...task });
+  const result = await collection.insertOne({ username, ...task, sharedWith: task.sharedWith || [] });
   return result.insertedId;
 }
 
@@ -38,7 +38,13 @@ module.exports = { addTask, getTasks, editTask };
 async function getTasks(username) {
   const db = await connectToDatabase();
   const collection = db.collection('tasks');
-  const tasks = await collection.find({ username }).toArray();
+  const tasks = await collection.find(
+    {
+      $or: [
+        { username },
+        { sharedWith: username }
+      ]
+    }).toArray();
   return tasks;
 }
 

@@ -581,4 +581,30 @@ app.get('/api/events/:username', async (req, res) => {
   }
 });
 
+// Merge schedules
+app.post('/api/merge-schedules', async (req, res) => {
+  const { username, friend, type } = req.body;
+
+  try {
+    if (type === 'task') {
+      // Update tasks to include the friend in the sharedWith field
+      await db.collection('tasks').updateMany(
+        { username },
+        { $addToSet: { sharedWith: friend } }
+      );
+    } else if (type === 'event') {
+      // Update events to include the friend in the sharedWith field
+      await db.collection('events').updateMany(
+        { createdBy: username },
+        { $addToSet: { sharedWith: friend } }
+      );
+    }
+
+    res.status(200).json({ message: 'Schedules merged successfully' });
+  } catch (err) {
+    console.error('Failed to merge schedules:', err);
+    res.status(500).json({ error: 'Failed to merge schedules' });
+  }
+});
+
 module.exports = app;

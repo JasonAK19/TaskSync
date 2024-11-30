@@ -4,10 +4,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import axios from 'axios';
 import AddGroupPopUp from './addGroupPopUp.js';
 import images from '../../assets';
-import myGroupsIcon from '../../assets/myGroups.png';
+import MergeSchedulePopUp from './mergeSchedulePopUp.js';
 import './sidebar.css';
 
-const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopUp, groups = [], setGroups }) => {
+const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopUp,onMergeSchedulePopUp, groups = [], setGroups }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
   const navigate = useNavigate();
   const location = useLocation();
@@ -63,7 +63,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopU
           <img src={images['createGroups.png']} alt="task" className="menu-icon" /> Create Group
         </button>
 
-        <button className="menu-item">
+        <button className="menu-item" onClick={onMergeSchedulePopUp}>
           <img src={images['merge.png']} alt="merge" className="menu-icon" /> Merge Schedules
         </button>
         

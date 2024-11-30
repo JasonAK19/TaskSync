@@ -6,6 +6,7 @@ import AddTaskPopUp from './components/addTaskPopUp';
 import EditTaskPopUp from "./components/editTaskPopUp";
 import AddGroupPopUp from './components/addGroupPopUp'; 
 import FriendRequestPopUp from './components/friendRequestPopUp';
+import MergeSchedulePopUp from './components/mergeSchedulePopUp';
 import CompactCalendar from './components/compactCalendar';
 import EventPopUp from './components/eventPopUp';
 import axios from 'axios';
@@ -99,6 +100,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [groups, setGroups] = useState([]);
   const [isEventPopUpOpen, setIsEventPopUpOpen] = useState(false);
   const [events, setEvents] = useState([]);
+  const [isMergeSchedulePopUpOpen, setIsMergeSchedulePopUpOpen] = useState(false);
 
 
   useEffect(() => {
@@ -207,13 +209,26 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     }
   };
 
+
+  const handleMergeSchedules = async (friend, type) => {
+    try {
+      const response = await axios.post('/api/merge-schedules', { username, friend, type });
+      console.log('Merged schedules:', response.data);
+      // Update tasks or events based on the response
+    } catch (error) {
+      console.error('Failed to merge schedules:', error);
+    }
+  };
+
   return (
     <div className="main-dashboard">
       <Sidebar userInfo={userInfo} onLogout={onLogout}
        onOpenAddGroupPopUp={() => setIsAddGroupPopUpOpen(true)}
        onOpenEventPopUp={() => setIsEventPopUpOpen(true)}
         groups={groups} 
-        setGroups={setGroups} />
+        setGroups={setGroups}
+        onMergeSchedulePopUp={() => setIsMergeSchedulePopUpOpen(true)}
+         />
 
 <div className="main-content">
   <Header username={username} />
@@ -311,6 +326,9 @@ const MainDashboard = ({ username, userId, onLogout }) => {
 
       {/* Event Popup */}
       <EventPopUp isOpen={isEventPopUpOpen} onClose={() => setIsEventPopUpOpen(false)} onSave={handleSaveEvent} />
+
+      {/* Merge Schedule Popup */}
+      <MergeSchedulePopUp isOpen={isMergeSchedulePopUpOpen} onClose={() => setIsMergeSchedulePopUpOpen(false)} currentUser={username} onMerge={(friend, type) => {console.log(`Merged schedules with ${friend} for ${type}`);  }} />
     </div>
   );
 };
