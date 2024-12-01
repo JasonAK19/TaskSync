@@ -125,23 +125,26 @@ useEffect(() => {
   
       ws.current.onmessage = (event) => {
         try {
-          const message = JSON.parse(event.data);
-          setMessages(prevMessages => {
-            // Check for duplicate messages
-            const isDuplicate = prevMessages.some(
-              msg => msg.sender === message.sender && 
-                    msg.text === message.text &&
-                    msg.timestamp === message.timestamp
-            );
-            if (!isDuplicate) {
-              return [...prevMessages, {...message, timestamp: new Date().toISOString()}];
-            }
-            return prevMessages;
-          });
+            const message = JSON.parse(event.data);
+            setMessages(prevMessages => {
+                // Add message only if it doesn't exist
+                const messageExists = prevMessages.some(msg => 
+                    msg.id === message.id || 
+                    (msg.sender === message.sender && 
+                     msg.text === message.text && 
+                     msg.timestamp === message.timestamp)
+                );
+                
+                if (!messageExists) {
+                    return [...prevMessages, message];
+                }
+                return prevMessages;
+            });
         } catch (error) {
-          console.warn('Error parsing message:', error);
+            console.warn('Error parsing message:', error);
         }
-      };
+    };
+
   
       ws.current.onclose = () => {
         console.log('WebSocket connection closed, retrying...');
@@ -164,15 +167,19 @@ useEffect(() => {
   
   const handleSendMessage = () => {
     if (newMessage.trim() && ws.current?.readyState === WebSocket.OPEN) {
-      const messageData = {
-        sender: username,
-        text: newMessage.trim(),
-        timestamp: new Date().toISOString()
-      };
-      ws.current.send(JSON.stringify(messageData));
-      setNewMessage('');
+        const messageData = {
+            id: Date.now() + Math.random().toString(36).substring(7),
+            sender: username,
+            text: newMessage.trim(),
+            timestamp: new Date().toISOString()
+        };
+        ws.current.send(JSON.stringify(messageData));
+        
+        // Add own message immediately
+        setMessages(prevMessages => [...prevMessages, messageData]);
+        setNewMessage('');
     }
-  };
+};
 
     return (
         <div className="group-page">

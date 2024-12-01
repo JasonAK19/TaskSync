@@ -43,10 +43,12 @@ wss.on('connection', (ws) => {
     
     try {
       const parsedMessage = JSON.parse(messageString);
+      // Add a unique message ID
+      parsedMessage.id = Date.now() + Math.random().toString(36).substring(7);
       
-      // Broadcast the message to all clients
+      // Broadcast the message to all clients except the sender
       wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify(parsedMessage));
         }
       });
@@ -56,9 +58,13 @@ wss.on('connection', (ws) => {
   });
 
   // Send welcome message
-  ws.send(JSON.stringify({ sender: 'Server', text: 'Welcome to the group chat!' }));
+  ws.send(JSON.stringify({ 
+    id: 'welcome-' + Date.now(),
+    sender: 'Server', 
+    text: 'Welcome to the group chat!',
+    timestamp: new Date().toISOString()
+  }));
 });
-
 
 // Connect to MongoDB
 connectToDatabase().then(database => {
