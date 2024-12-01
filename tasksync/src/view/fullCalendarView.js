@@ -13,6 +13,7 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
   const [ownTasks, setOwnTasks] = useState([]);
   const [sharedTasks, setSharedTasks] = useState([]);
   const [events, setEvents] = useState([]);
+  const [sharedEvents, setSharedEvents] = useState([]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -61,6 +62,9 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
       try {
         const eventsResponse = await axios.get(`/api/events/${username}`);
         setEvents(eventsResponse.data);
+
+        const sharedEventsResponse = await axios.get(`/api/events/shared/${username}`);
+        setSharedEvents(sharedEventsResponse.data);
       } catch (error) {
         console.error('Failed to fetch events:', error);
       }
@@ -148,7 +152,29 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
     };
   }).filter(event => event !== null);
 
-  const allEvents = [...ownTaskEvents, ...sharedTaskEvents, ...groupTaskEvents, ...userEvents];
+  //const allEvents = [...ownTaskEvents, ...sharedTaskEvents, ...groupTaskEvents, ...userEvents];
+
+
+  const sharedEventItems = sharedEvents.map(event => {
+    const startDate = event.startDateTime;
+    const endDate = event.endDateTime;
+  
+    if (!startDate || !endDate) {
+      console.error('Invalid event date:', event);
+      return null;
+    }
+  
+    return {
+      id: event._id,
+      title: `[Shared] ${event.title}`,
+      start: new Date(startDate).toISOString(),
+      end: new Date(endDate).toISOString(),
+      className: 'shared-event',
+      editable: false
+    };
+  }).filter(event => event !== null);
+  
+  const allEvents = [...ownTaskEvents, ...sharedTaskEvents, ...groupTaskEvents, ...userEvents, ...sharedEventItems];
   console.log('All Events:', allEvents);
 
   const eventContent = (arg) => {

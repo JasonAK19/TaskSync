@@ -498,6 +498,29 @@ app.get('/api/notifications/:username', async (req, res) => {
   }
 });
 
+
+// Update notification
+app.put('/api/notifications/:notificationId', async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const { handled, read } = req.body;
+
+    const result = await db.collection('Notification').updateOne(
+      { _id: new ObjectId(notificationId) },
+      { $set: { handled, read } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: 'Notification not found' });
+    }
+
+    res.status(200).json({ message: 'Notification updated successfully' });
+  } catch (err) {
+    console.error('Error updating notification:', err);
+    res.status(500).json({ error: 'Failed to update notification' });
+  }
+});
+
 // Create group task
 app.post('/api/groups/:groupId/tasks', async (req, res) => {
   try {
@@ -578,7 +601,8 @@ app.post('/api/events', async (req, res) => {
       reminder:Boolean(reminder),
       reminderTime:Number(reminderTime) || 15,
       createdBy: createdBy,
-      createdAt: new Date()
+      createdAt: new Date(),
+      sharedWith: []
     };
 
     // Verify user exists before creating event
@@ -633,6 +657,18 @@ app.get('/api/events/:username', async (req, res) => {
   }
 });
 
+// Get shared events
+app.get('/api/events/shared/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const sharedEvents = await db.collection('Event').find({ sharedWith: username }).toArray();
+    res.status(200).json(sharedEvents);
+  } catch (err) {
+    console.error('Failed to fetch shared events:', err);
+    res.status(500).json({ error: 'Failed to fetch shared events' });
+  }
+});
+
 // Merge schedules
 app.post('/api/merge-schedules', async (req, res) => {
   const { username, friend, type } = req.body;
@@ -646,7 +682,7 @@ app.post('/api/merge-schedules', async (req, res) => {
       );
     } else if (type === 'event') {
       // Update events to include the friend in the sharedWith field
-      await db.collection('events').updateMany(
+      await db.collection('Event').updateMany(
         { createdBy: username },
         { $addToSet: { sharedWith: friend } }
       );

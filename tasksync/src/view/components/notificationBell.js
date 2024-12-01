@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import images from '../../assets';
 import './notificationBell.css';
 
-const socket = io('http://localhost:3000', {
+const socket = io(window.location.port === '3001' ? 'http://localhost:3001' : 'http://localhost:3002', {
   transports: ['websocket', 'polling'],
   reconnection: true
 });
@@ -53,22 +53,29 @@ const NotificationBell = ({ username }) => {
       // Update friend request status
       await axios.put(`/friend-requests/${requestId}`, { status: action });
         
-      // Delete notification using notification _id instead of requestId
+      // Find the notification
       const notificationToDelete = notifications.find(n => n.requestId === requestId);
       if (notificationToDelete && notificationToDelete._id) {
-        await axios.delete(`/api/notifications/${notificationToDelete._id}`);
-      }
+        // Update notification in database
+        await axios.put(`/api/notifications/${notificationToDelete._id}`, {
+          handled: true,
+          read: true
+        });
         
-      // Update local state using notification _id
-      const updatedNotifications = notifications.filter(n => n.requestId !== requestId);
-      setNotifications(updatedNotifications);
-      setIsDropdownOpen(false); // Close dropdown after action
-        
-      // Update unread count
-      const notification = notifications.find(n => n.requestId === requestId);
-      if (notification && !notification.read) {
+        // Update local state immediately
+        setNotifications(prevNotifications => 
+          prevNotifications.map(n => 
+            n._id === notificationToDelete._id 
+              ? { ...n, handled: true, read: true }
+              : n
+          )
+        );
+  
+        // Update unread count
         setUnreadCount(prev => Math.max(0, prev - 1));
       }
+  
+      setIsDropdownOpen(false);
   
     } catch (error) {
       console.error(`Failed to ${action} friend request:`, error);
@@ -85,14 +92,21 @@ const NotificationBell = ({ username }) => {
         userId: username
       });
       
-      // Find and delete the notification
+      // Find and update the notification
       const notificationToDelete = notifications.find(n => n.groupId === groupId);
       if (notificationToDelete && notificationToDelete._id) {
-        await axios.delete(`/api/notifications/${notificationToDelete._id}`);
+        // Mark as handled in the database
+        await axios.put(`/api/notifications/${notificationToDelete._id}`, {
+          handled: true,
+          read: true
+        });
         
-        // Update local notifications state
-        const updatedNotifications = notifications.filter(n => n.groupId !== groupId);
-        setNotifications(updatedNotifications);
+        // Update local state
+        setNotifications(notifications.map(n => 
+          n._id === notificationToDelete._id 
+            ? { ...n, handled: true, read: true }
+            : n
+        ));
         
         // Update unread count if needed
         if (!notificationToDelete.read) {
@@ -100,7 +114,6 @@ const NotificationBell = ({ username }) => {
         }
       }
       
-      // Close dropdown after action
       setIsDropdownOpen(false);
   
     } catch (error) {
@@ -124,38 +137,38 @@ const NotificationBell = ({ username }) => {
           {notifications.length === 0 ? (
             <div className="no-notifications">No notifications</div>
           ) : (
-            notifications.map((notification) => (
-              <div key={notification._id} className={`notification-item ${!notification.read ? 'unread' : ''}`}>
-                <div className="notification-content">
-                  <p>{notification.message}</p>
-                  <span className="notification-time">
-                    {new Date(notification.createdAt).toLocaleString()}
-                  </span>
+            notifications
+              .filter(notification => !notification.handled)
+              .map((notification) => (
+                <div key={notification._id} className={`notification-item ${!notification.read ? 'unread' : ''}`}>
+                  <div className="notification-content">
+                    <p>{notification.message}</p>
+                    <span className="notification-time">
+                      {new Date(notification.createdAt).toLocaleString()}
+                    </span>
+                  </div>
+                  {notification.type === 'friendRequest' && !notification.handled && (
+                    <div className="friend-request-actions">
+                      <button 
+                        onClick={() => handleFriendRequest(notification.requestId, 'accepted')}
+                        className="accept-btn">Accept</button>
+                      <button 
+                        onClick={() => handleFriendRequest(notification.requestId, 'declined')}
+                        className="decline-btn">Decline</button>
+                    </div>
+                  )}
+                  {notification.type === 'groupInvite' && !notification.handled && (
+                    <div className="friend-request-actions">
+                      <button 
+                        onClick={() => handleGroupInvite(notification.groupId, 'accepted')}
+                        className="accept-btn">Join</button>
+                      <button 
+                        onClick={() => handleGroupInvite(notification.groupId, 'declined')}
+                        className="decline-btn">Decline</button>
+                    </div>
+                  )}
                 </div>
-                {notification.type === 'friendRequest' && (
-                  <div className="friend-request-actions">
-                    <button 
-                      onClick={() => handleFriendRequest(notification.requestId, 'accepted')}
-                      className="accept-btn"> Accept </button>
-                    <button 
-                      onClick={() => handleFriendRequest(notification.requestId, 'declined')}
-                      className="decline-btn"> Decline </button>
-                  </div>
-                )}
-                {notification.type === 'groupInvite' && (
-                  <div className="friend-request-actions">
-                    <button 
-                      onClick={() => handleGroupInvite(notification.groupId, 'accepted')}
-                      className="accept-btn"> Join
-                    </button>
-                    <button 
-                      onClick={() => handleGroupInvite(notification.groupId, 'declined')}
-                      className="decline-btn"> Decline
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))
+              ))
           )}
         </div>
       )}
@@ -166,4 +179,5 @@ const NotificationBell = ({ username }) => {
 NotificationBell.propTypes = {
   username: PropTypes.string.isRequired
 };
+
 export default NotificationBell;
