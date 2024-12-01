@@ -10,6 +10,7 @@ const connectToDatabase = require('./mongoConnection');
 const { addTask, getTasks, editTask } = require('./taskModel');
 const { ObjectId } = require('mongodb');
 const { create } = require('domain');
+const WebSocket = require('ws');
 
 const app = express();
 const server = http.createServer(app);
@@ -22,13 +23,41 @@ const io = socketIo(server, {
   }
 });
 
-const port = 3000;
+const port = process.env.PORT || 3000;
+
 
 app.use(cors({ origin: ['http://localhost:3001', 'http://localhost:3002'], credentials: true })); // Use the CORS middleware
 app.use(bodyParser.json());
 
 let db;
 
+const wss = new WebSocket.Server({ port: 8080 });
+
+wss.on('connection', (ws) => {
+  console.log('New client connected');
+  
+  ws.on('message', (message) => {
+    // Parse the buffer to string and then to JSON
+    const messageString = message.toString();
+    console.log('Received message:', messageString);
+    
+    try {
+      const parsedMessage = JSON.parse(messageString);
+      
+      // Broadcast the message to all clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(parsedMessage));
+        }
+      });
+    } catch (error) {
+      console.error('Error parsing message:', error);
+    }
+  });
+
+  // Send welcome message
+  ws.send(JSON.stringify({ sender: 'Server', text: 'Welcome to the group chat!' }));
+});
 
 
 // Connect to MongoDB

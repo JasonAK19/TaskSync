@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { useParams } from 'react-router-dom';
 import Header from './components/header';
 import AddGroupTaskPopup from './components/addGroupTaskPopUp';
 import EditGroupTaskPopup from './components/editGroupTaskPopUp';
 import axios from 'axios';
 import './groupPage.css';
+import images from '../assets';
+
 
 const GroupPage = ({username}) => {
     const { groupId } = useParams();
@@ -22,7 +24,9 @@ const GroupPage = ({username}) => {
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
     const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
     const [taskToEdit, setTaskToEdit] = useState(null);
-    const [tasks, setTasks] = useState([]);
+    const [tasks, setTasks] = useState([]);const [newMessage, setNewMessage] = useState('');
+    const ws = useRef(null);
+
 
 
     // Fetch group data on mount
@@ -111,6 +115,64 @@ const handleDeleteTask = async (taskId) => {
     }
 };
 
+useEffect(() => {
+    const connectWebSocket = () => {
+      ws.current = new WebSocket('ws://localhost:8080');
+  
+      ws.current.onopen = () => {
+        console.log('WebSocket connection established');
+      };
+  
+      ws.current.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          setMessages(prevMessages => {
+            // Check for duplicate messages
+            const isDuplicate = prevMessages.some(
+              msg => msg.sender === message.sender && 
+                    msg.text === message.text &&
+                    msg.timestamp === message.timestamp
+            );
+            if (!isDuplicate) {
+              return [...prevMessages, {...message, timestamp: new Date().toISOString()}];
+            }
+            return prevMessages;
+          });
+        } catch (error) {
+          console.warn('Error parsing message:', error);
+        }
+      };
+  
+      ws.current.onclose = () => {
+        console.log('WebSocket connection closed, retrying...');
+        setTimeout(connectWebSocket, 3000); // Retry after 3 seconds
+      };
+  
+      ws.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+    };
+  
+    connectWebSocket();
+  
+    return () => {
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
+  }, []);
+  
+  const handleSendMessage = () => {
+    if (newMessage.trim() && ws.current?.readyState === WebSocket.OPEN) {
+      const messageData = {
+        sender: username,
+        text: newMessage.trim(),
+        timestamp: new Date().toISOString()
+      };
+      ws.current.send(JSON.stringify(messageData));
+      setNewMessage('');
+    }
+  };
 
     return (
         <div className="group-page">
@@ -124,7 +186,7 @@ const handleDeleteTask = async (taskId) => {
                     <div className="members-list">
                         {group?.members?.map(member => (
                             <div key={member} className="member">
-                                <img src="/default-avatar.png" alt={member} />
+                                <img src= {images['defaultpf.jpg']} alt={member} />
                                 <span className="member-username">{member}</span>
                             </div>
                         ))}
@@ -188,22 +250,33 @@ const handleDeleteTask = async (taskId) => {
 
                 {/* Group Chat Section */}
                 <section className="group-chat">
-                    <h3>Group Chat</h3>
-                    <div className="chat-messages">
-                        {messages.map(message => (
-                            <div key={message.id} className="message">
-                                <span className="message-sender">{message.sender}: </span>
-                                <span className="message-text">{message.text}</span>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="message-input">
-                        <input type="text" placeholder="Type a message..." />
-                        <button>Send</button>
-                    </div>
-                </section>
+          <h3>Group Chat</h3>
+          <div className="chat-messages">
+            {messages.map((message, index) => (
+                <div 
+                key={`${message.sender}-${message.timestamp}-${index}`} 
+                className={`message ${message.sender === username ? 'own-message' : ''}`}
+                >
+                <span className="message-sender">{message.sender}: </span>
+                <span className="message-text">{message.text}</span>
+                <span className="message-time">
+                    {new Date(message.timestamp).toLocaleTimeString()}
+                </span>
+                </div>
+            ))}
             </div>
+          <div className="message-input">
+            <input
+              type="text"
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+            />
+            <button onClick={handleSendMessage}>Send</button>
+          </div>
+        </section>
         </div>
+    </div>
     );
 };
 
