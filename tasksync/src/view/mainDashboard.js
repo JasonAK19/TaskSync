@@ -247,10 +247,54 @@ const MainDashboard = ({ username, userId, onLogout }) => {
             <div className="task-icon"></div>
             <div className="task-details">
               <h4>No Tasks Yet</h4>
-              <p>Select the plus icon to add a task</p>
+              <p>Select Add New Task button above to add a task</p>
             </div>
             <div className="task-options">
               <button className="task-menu">...</button>
+            </div>
+          </div>
+        ) : (
+          tasks.map(task => (
+            <div key={task._id} className="task">
+              
+              <div className="task-details">
+                <h4>{task.title}</h4>
+                <p>{task.description}</p>
+              </div>
+              <div className="task-date">
+                <h4>{task.date}</h4>
+                <h4>{task.time}</h4>
+              </div>
+              <div className="task-options">
+                <button onClick={() => toggleTaskMenu(task._id)} className="task-menu">...</button>
+                {dropdownVisible === task._id && (
+                  <div className="dropdown-menu">
+                    <button onClick={() => openEditTaskPopup(task)}>Edit</button>
+                    <button onClick={() => handleDelete(task._id)}>Delete</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+
+        {/*Event*/}
+    <section className="event-section-box">
+      <h3 className="event-box-title">Your Events</h3>
+
+  
+      <div className={`event-list-section ${tasks.length > 0 ? 'scrollable' : ''}`}>
+        {tasks.length === 0 ? (
+          <div className="event">
+            <div className="event-icon"></div>
+            <div className="event-details">
+              <h4>No Events Yet</h4>
+              <p>Select Create Event button to add a event</p>
+            </div>
+            <div className="event-options">
+              <button className="event-menu">...</button>
             </div>
           </div>
         ) : (
