@@ -6,51 +6,71 @@ import axios from 'axios';
 import './fullCalendarView.css';
 import Header from './components/header';
 import Sidebar from './components/sidebar';
+
 const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) => {
-  const [tasks, setTasks] = useState([]);
   const [groupTasks, setGroupTasks] = useState([]);
   const [groupNames, setGroupNames] = useState({});
+  const [ownTasks, setOwnTasks] = useState([]);
+  const [sharedTasks, setSharedTasks] = useState([]);
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     const fetchTasks = async () => {
-        try {
-          // Fetch user tasks
-          const userTasksResponse = await axios.get(`/tasks/${username}`);
-          setTasks(userTasksResponse.data);
-      
-          // Fetch all groups first
-          const groupsResponse = await axios.get(`/api/user/${username}/groups`);
-          const userGroups = groupsResponse.data.groups;
-          
-          // Create map of group IDs to names
-          const groupNameMap = {};
-          userGroups.forEach(group => {
-            groupNameMap[group._id] = group.name;
-          });
-          setGroupNames(groupNameMap);
-      
-          // Fetch tasks for each group
-          const allGroupTasksPromises = userGroups.map(group => 
-            axios.get(`/api/groups/${group._id}/tasks`)
-              .then(response => response.data.map(task => ({
-                ...task,
-                groupId: group._id // Add groupId to each task
-              })))
-          );
-          const groupTasksResponses = await Promise.all(allGroupTasksPromises);
-          const allGroupTasks = groupTasksResponses.flatMap(tasks => tasks);
-          
-          setGroupTasks(allGroupTasks);
-        } catch (error) {
-          console.error('Failed to fetch tasks:', error);
-        }
-      };        
+      try {
+        // Fetch user's own tasks
+        const userTasksResponse = await axios.get(`/tasks/${username}`);
+        setOwnTasks(userTasksResponse.data);
+
+        // Fetch tasks shared with user
+        const sharedTasksResponse = await axios.get(`/tasks/shared/${username}`);
+        setSharedTasks(sharedTasksResponse.data);
+
+        // Fetch all groups
+        const groupsResponse = await axios.get(`/api/user/${username}/groups`);
+        const userGroups = groupsResponse.data.groups;
+        
+        // Create map of group IDs to names
+        const groupNameMap = {};
+        userGroups.forEach(group => {
+          groupNameMap[group._id] = group.name;
+        });
+        setGroupNames(groupNameMap);
+    
+        // Fetch tasks for each group
+        const allGroupTasksPromises = userGroups.map(group => 
+          axios.get(`/api/groups/${group._id}/tasks`)
+            .then(response => response.data.map(task => ({
+              ...task,
+              groupId: group._id
+            })))
+        );
+        const groupTasksResponses = await Promise.all(allGroupTasksPromises);
+        const allGroupTasks = groupTasksResponses.flatMap(tasks => tasks);
+        
+        setGroupTasks(allGroupTasks);
+      } catch (error) {
+        console.error('Failed to fetch tasks:', error);
+      }
+    };        
 
     fetchTasks();
   }, [username]);
 
-  const taskEvents = tasks.map(task => {
-    const taskDate = task.date;
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const eventsResponse = await axios.get(`/api/events/${username}`);
+        setEvents(eventsResponse.data);
+      } catch (error) {
+        console.error('Failed to fetch events:', error);
+      }
+    };
+
+    fetchEvents();
+  }, [username]);
+
+  const ownTaskEvents = ownTasks.map(task => {
+    const taskDate = new Date(task.date).toISOString().split('T')[0];
     const startDateTime = task.time ? 
       `${taskDate}T${task.time}:00` :
       `${taskDate}T09:00:00`;
@@ -58,13 +78,33 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
     const [hours, minutes] = (task.time || '09:00').split(':');
     const endHour = String(Number(hours) + 1).padStart(2, '0');
     const endDateTime = `${taskDate}T${endHour}:${minutes}:00`;
-  
+
     return {
       id: task._id,
       title: task.title,
       start: startDateTime,
       end: endDateTime,
       className: 'task-event'
+    };
+  });
+  
+  const sharedTaskEvents = sharedTasks.map(task => {
+    const taskDate = new Date(task.date).toISOString().split('T')[0];
+    const startDateTime = task.time ? 
+      `${taskDate}T${task.time}:00` :
+      `${taskDate}T09:00:00`;
+      
+    const [hours, minutes] = (task.time || '09:00').split(':');
+    const endHour = String(Number(hours) + 1).padStart(2, '0');
+    const endDateTime = `${taskDate}T${endHour}:${minutes}:00`;
+
+    return {
+      id: task._id,
+      title: `[Shared] ${task.title}`,
+      start: startDateTime,
+      end: endDateTime,
+      className: 'shared-task-event',
+      editable: false
     };
   });
   
@@ -90,7 +130,26 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
     };
   });
 
-  const allEvents = [...taskEvents, ...groupTaskEvents];
+  const userEvents = events.map(event => {
+    const startDate = event.startDateTime;
+    const endDate = event.endDateTime;
+
+    if (!startDate || !endDate) {
+      console.error('Invalid event date:', event);
+      return null;
+    }
+
+    return {
+      id: event._id,
+      title: event.title,
+      start: new Date(startDate).toISOString(),
+      end: new Date(endDate).toISOString(),
+      className: 'user-event'
+    };
+  }).filter(event => event !== null);
+
+  const allEvents = [...ownTaskEvents, ...sharedTaskEvents, ...groupTaskEvents, ...userEvents];
+  console.log('All Events:', allEvents);
 
   const eventContent = (arg) => {
     return (

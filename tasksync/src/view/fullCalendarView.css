@@ -146,3 +146,10 @@
     border: 1px solid #615382;
     border-radius: 4px;
   }
+
+  .shared-task-event {
+    background-color: rgba(97, 83, 130, 0.1);
+    border: 1px solid #615382;
+    border-radius: 4px;
+    cursor: default;
+  }

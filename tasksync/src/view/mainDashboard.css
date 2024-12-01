@@ -133,6 +133,8 @@
   max-height: 200px;
   padding-right: 15px;
   margin-top: 30px;
+  min-height: 200px; 
+  max-height: 200px;
 }
 
 .main-dashboard .task-list-section.scrollable {

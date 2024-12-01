@@ -14,7 +14,6 @@ const CompactCalendar = ({ tasks = [], events = [] }) => {
     className: 'task-event'
   }));
 
-
   const calendarEvents = events.map(event => ({
     id: event._id,
     title: event.title,
@@ -26,13 +25,6 @@ const CompactCalendar = ({ tasks = [], events = [] }) => {
   const allEvents = [...taskEvents, ...calendarEvents];
 
   const dayCellContent = (arg) => {
-    const hasTask = allEvents.some(event => {
-      const eventDate = moment(event.start).format('YYYY-MM-DD');
-      const currentDate = moment(arg.date).format('YYYY-MM-DD');
-      return eventDate === currentDate;
-    });
-  
-
     return (
       <div className="fc-daygrid-day-number">
         {arg.dayNumberText}
@@ -41,12 +33,23 @@ const CompactCalendar = ({ tasks = [], events = [] }) => {
   };
 
   const eventContent = (arg) => {
+    const isTask = arg.event.classNames.includes('task-event');
     return (
-      <div className= {`custom-event ${arg.event.classNames}`}>
-        <span className="event-dot"></span>
+      <div className={`custom-event ${arg.event.classNames}`}>
+        {isTask && <span className="event-dot"></span>}
         <span className="event-title">{arg.event.title}</span>
       </div>
     );
+  };
+
+  const dayCellClassNames = (arg) => {
+    const hasEvent = calendarEvents.some(event => {
+      const eventDate = moment(event.start).format('YYYY-MM-DD');
+      const currentDate = moment(arg.date).format('YYYY-MM-DD');
+      return eventDate === currentDate;
+    });
+
+    return hasEvent ? ['event-day'] : [];
   };
 
   return (
@@ -64,6 +67,7 @@ const CompactCalendar = ({ tasks = [], events = [] }) => {
         eventDisplay="list-item"
         dayCellContent={dayCellContent}
         eventContent={eventContent}
+        dayCellClassNames={dayCellClassNames}
       />
     </div>
   );

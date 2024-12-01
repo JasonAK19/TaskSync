@@ -38,13 +38,7 @@ module.exports = { addTask, getTasks, editTask };
 async function getTasks(username) {
   const db = await connectToDatabase();
   const collection = db.collection('tasks');
-  const tasks = await collection.find(
-    {
-      $or: [
-        { username },
-        { sharedWith: username }
-      ]
-    }).toArray();
+  const tasks = await collection.find({ username }).toArray(); // Only get tasks created by user
   return tasks;
 }
 

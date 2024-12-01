@@ -185,7 +185,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     const isConfirmed = window.confirm("Are you sure you want to delete this task?");
     if (!isConfirmed) return;
     try {
-      const response = await axios.delete(`/tasks/${taskId}`);
+      const response = await axios.delete(`/tasks/${taskId}?username=${username}`);
       if (response.status === 200) {
         const updatedTasks = tasks.filter(task => task._id !== taskId);
         setTasks(updatedTasks);
@@ -201,7 +201,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
 
   const handleSaveEvent = async (eventData) => {
     try {
-      const response = await axios.post('/api/events', { ...eventData, createdBy: userId });
+      const response = await axios.post('/api/events', { ...eventData, createdBy: username });
       setEvents([...events, response.data]);
       setIsEventPopUpOpen(false);
     } catch (error) {
@@ -284,7 +284,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
 
              {/* Calendar Section */}
           <section className="calendar-section compact-calendar-container" >
-            <CompactCalendar tasks={tasks} />
+            <CompactCalendar tasks={tasks} events={events} />
           </section>
 
           {/* Friends Section */}

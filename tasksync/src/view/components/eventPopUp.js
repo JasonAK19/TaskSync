@@ -13,7 +13,7 @@ const EventPopUp = ({ isOpen, onClose, onSave }) => {
     location: '',
     isAllDay: false,
     reminder: false,
-    reminderTime: 15
+    reminderTime: 15,
   });
 
   const handleSubmit = async (e) => {

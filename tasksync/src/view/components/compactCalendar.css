@@ -107,3 +107,8 @@
   text-overflow: ellipsis;
 }
 
+.event-day {
+  color: #ffff;
+  background-color: #8a2be2; 
+
+}

@@ -157,22 +157,23 @@ app.post('/tasks', async (req, res) => {
 app.put('/tasks/:taskId', async (req, res) => {
   const { taskId } = req.params;
   const updatedTask = req.body;
-
-  //validation for task title
-  if (!updatedTask.title || updatedTask.title.trim() === '') {
-    return res.status(400).json({ error: 'Invalid task title.' });
-  }
+  const { username } = req.body; // Add username to request body
 
   try {
-    const result = await editTask(new ObjectId(taskId), updatedTask);
-    if (result.modifiedCount > 0) {
-      res.status(200).json({ message: 'Task updated successfully' });
-    } else {
-      res.status(404).json({ error: 'Task not found' });
+    // Check if user is the task creator
+    const task = await db.collection('tasks').findOne({ 
+      _id: new ObjectId(taskId),
+      username: username
+    });
+
+    if (!task) {
+      return res.status(403).json({ error: 'Not authorized to edit this task' });
     }
+
+    const result = await editTask(new ObjectId(taskId), updatedTask);
+    // ... rest of the handler
   } catch (err) {
-    console.error('Error updating task:', err);
-    res.status(500).json({ error: 'Failed to update task' });
+    // ... error handling
   }
 });
 
@@ -190,20 +191,29 @@ app.get('/tasks/:username', async (req, res) => {
 // Delete an existing task
 app.delete('/tasks/:taskId', async (req, res) => {
   const { taskId } = req.params;
+  const { username } = req.query; // Ensure username is passed as a query parameter
 
   try {
+    // Check if the task exists and is created by the user
+    const task = await db.collection('tasks').findOne({ _id: new ObjectId(taskId), username: username });
+
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found or not authorized to delete' });
+    }
+
+    // Delete the task
     const result = await db.collection('tasks').deleteOne({ _id: new ObjectId(taskId) });
+
     if (result.deletedCount > 0) {
       res.status(200).json({ message: 'Task deleted successfully' });
     } else {
-      res.status(404).json({ error: 'Task not found' });
+      res.status(500).json({ error: 'Failed to delete task' });
     }
   } catch (err) {
     console.error('Error deleting task:', err);
     res.status(500).json({ error: 'Failed to delete task' });
   }
 });
-
 // Create a new group
 app.post('/api/groups', async (req, res) => {
   try {
@@ -529,12 +539,19 @@ app.post('/api/events', async (req, res) => {
       startDateTime: new Date(startDateTime),
       endDateTime: new Date(endDateTime),
       location,
-      isAllDay,
-      reminder,
-      reminderTime,
+      isAllDay:Boolean(isAllDay),
+      reminder:Boolean(reminder),
+      reminderTime:Number(reminderTime) || 15,
       createdBy: createdBy,
       createdAt: new Date()
     };
+
+    // Verify user exists before creating event
+    const user = await db.collection('User').findOne({ username: createdBy });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
 
     const result = await db.collection('Event').insertOne(newEvent);
     res.status(201).json({ eventId: result.insertedId, ...newEvent });
@@ -604,6 +621,19 @@ app.post('/api/merge-schedules', async (req, res) => {
   } catch (err) {
     console.error('Failed to merge schedules:', err);
     res.status(500).json({ error: 'Failed to merge schedules' });
+  }
+});
+
+app.get('/tasks/shared/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const sharedTasks = await db.collection('tasks').find({
+      sharedWith: username,
+      username: { $ne: username } // Exclude tasks created by the user
+    }).toArray();
+    res.status(200).json(sharedTasks);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch shared tasks' });
   }
 });
 
