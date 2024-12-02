@@ -222,16 +222,23 @@ const MainDashboard = ({ username, userId, onLogout }) => {
 
   const handleEditEvent = async (eventId, eventPayload) => {
     try {
-      const response = await axios.put(`/api/events/${eventId}`, eventPayload);
+      const response = await axios.put(`/api/events/${eventId}`, {
+        ...eventPayload,
+        username // Add username 
+      });
+      
       if (response.status === 200) {
-        const eventPayload = events.map(event =>
-          event._id === eventId ? { ...event, ...eventPayload } : event
+        setEvents(prevEvents => 
+          prevEvents.map(event => 
+            event._id === eventId ? { ...event, ...eventPayload } : event
+          )
         );
-        setEvents(eventPayload);
         setIsEditEventPopUpOpen(false);
+        setEventToEdit(null);
       }
     } catch (err) {
-      console.error('Failed to edit event:', err.response || err);
+      console.error('Failed to edit event:', err);
+      alert('Failed to update event. Please try again.');
     }
   };
 
@@ -246,13 +253,16 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   if (!isConfirmed) return;
 
   try {
-    const response = await axios.delete(`/api/events/${eventId}?username=${username}`);
-    console.log('Server response:', response);
+    const response = await axios.delete(`/api/events/${eventId}`, {
+      params: { username } 
+    });
+
     if (response.status === 200) {
       setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
     }
   } catch (err) {
-    console.error('Failed to delete event:', err.response || err);
+    console.error('Failed to delete event:', err);
+    alert('Failed to delete event. Please try again.');
   }
 };
 
@@ -413,8 +423,8 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       <EventPopUp isOpen={isEventPopUpOpen} onClose={() => setIsEventPopUpOpen(false)} onSave={handleSaveEvent} />
 
       {/* This line causes an error right now */}
-      <EditEventPopUp isOpen={isEditEventPopUpOpen} closeModal={() => setIsEditEventPopUpOpen(false)} onSave={(eventPayload) => handleEditEvent(eventToEdit._id, eventPayload)} event={eventToEdit} /> 
-
+      <EditEventPopUp isOpen={isEditEventPopUpOpen} closeModal={() => {setIsEditEventPopUpOpen(false); setEventToEdit(null);}}
+  onSave={(eventPayload) => handleEditEvent(eventToEdit._id, eventPayload)} event={eventToEdit} />
       {/* Add Group Popup */}
       <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} currentUser={username} />
       

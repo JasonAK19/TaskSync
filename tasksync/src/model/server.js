@@ -657,64 +657,80 @@ app.get('/api/events/:username', async (req, res) => {
   }
 });
 
+// Update an event
 app.put('/api/events/:eventId', async (req, res) => {
   try {
     const { eventId } = req.params;
     const updates = req.body;
 
-    // Ensure that the provided eventId is valid
+    // Validate ObjectId
     if (!ObjectId.isValid(eventId)) {
       return res.status(400).json({ error: 'Invalid event ID' });
     }
 
-    // Find the event to ensure the user is authorized to edit it
-    const event = await db.collection('Event').findOne({ _id: new ObjectId(eventId) });
+    // Find and update the event
+    const result = await db.collection('Event').findOneAndUpdate(
+      { _id: new ObjectId(eventId) },
+      { 
+        $set: {
+          title: updates.title,
+          description: updates.description,
+          startDateTime: new Date(updates.startDateTime),
+          endDateTime: new Date(updates.endDateTime),
+          location: updates.location,
+          isAllDay: updates.isAllDay,
+          reminder: updates.reminder,
+          reminderTime: updates.reminderTime,
+          updatedAt: new Date()
+        }
+      },
+      { returnDocument: 'after' }
+    );
 
-    if (!event) {
+    if (!result.value) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    // Check if the current user is the creator of the event
-    if (event.createdBy.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You are not authorized to edit this event' });
-    }
-
-    // Update the event
-    const result = await db.collection('Event').updateOne(
-      { _id: new ObjectId(eventId) },
-      { $set: updates }
-    );
-
-    res.status(200).json({ message: 'Event updated successfully' });
+    res.status(200).json(result.value);
   } catch (error) {
     console.error('Error updating event:', error);
     res.status(500).json({ error: 'Failed to update event' });
   }
 });
 
+// Delete an event
 app.delete('/api/events/:eventId', async (req, res) => {
   try {
     const { eventId } = req.params;
+    const { username } = req.query; // Get username from query params
 
-    // Ensure that the provided eventId is valid
+    // Validate eventId
     if (!ObjectId.isValid(eventId)) {
       return res.status(400).json({ error: 'Invalid event ID' });
     }
 
-    // Find the event to ensure the user is authorized to delete it
-    const event = await db.collection('Event').findOne({ _id: new ObjectId(eventId) });
+    // Find the event
+    const event = await db.collection('Event').findOne({ 
+      _id: new ObjectId(eventId)
+    });
 
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    // Check if the current user is the creator of the event
-    if (event.createdBy.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You are not authorized to delete this event' });
+    // Check if user is authorized (creator of the event)
+    if (event.createdBy !== username) {
+      return res.status(403).json({ error: 'Not authorized to delete this event' });
     }
 
     // Delete the event
-    const result = await db.collection('Event').deleteOne({ _id: new ObjectId(eventId) });
+    const result = await db.collection('Event').deleteOne({ 
+      _id: new ObjectId(eventId) 
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
 
     res.status(200).json({ message: 'Event deleted successfully' });
   } catch (error) {
@@ -722,6 +738,7 @@ app.delete('/api/events/:eventId', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete event' });
   }
 });
+
 
 // Get shared events
 app.get('/api/events/shared/:username', async (req, res) => {

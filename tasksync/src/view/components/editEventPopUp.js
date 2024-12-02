@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './eventPopUp.css';
 
-const EditEventPopUp = ({ isOpen, closeModal, onSave, eventData: initialEventData }) => {
-  // Initialize state with event data (if provided)
+const EditEventPopUp = ({ isOpen, closeModal, onSave, event }) => {
   const [eventData, setEventData] = useState({
     title: '',
     description: '',
@@ -16,32 +15,37 @@ const EditEventPopUp = ({ isOpen, closeModal, onSave, eventData: initialEventDat
     reminderTime: 15,
   });
 
-  // Update the state when the component is opened and receives new event data
   useEffect(() => {
-    if (isOpen && initialEventData) {
-      console.log('initialEventData inside useEffect:', initialEventData);  // Debug log
+    if (event) {
+      const startDateTime = new Date(event.startDateTime);
+      const endDateTime = new Date(event.endDateTime);
 
       setEventData({
-        title: initialEventData.title || '',
-        description: initialEventData.description || '',
-        startDate: initialEventData.startDateTime ? initialEventData.startDateTime.split('T')[0] : '',
-        startTime: initialEventData.startDateTime ? initialEventData.startDateTime.split('T')[1] : '',
-        endDate: initialEventData.endDateTime ? initialEventData.endDateTime.split('T')[0] : '',
-        endTime: initialEventData.endDateTime ? initialEventData.endDateTime.split('T')[1] : '',
-        location: initialEventData.location || '',
-        isAllDay: initialEventData.isAllDay || false,
-        reminder: initialEventData.reminder || false,
-        reminderTime: initialEventData.reminderTime || 15,
+        title: event.title || '',
+        description: event.description || '',
+        startDate: startDateTime.toISOString().split('T')[0],
+        startTime: startDateTime.toISOString().split('T')[1].substring(0, 5),
+        endDate: endDateTime.toISOString().split('T')[0],
+        endTime: endDateTime.toISOString().split('T')[1].substring(0, 5),
+        location: event.location || '',
+        isAllDay: event.isAllDay || false,
+        reminder: event.reminder || false,
+        reminderTime: event.reminderTime || 15,
       });
     }
-  }, [isOpen, initialEventData]); // Re-run effect when isOpen or initialEventData changes
+  }, [event]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const eventPayload = {
-      ...eventData,
-      startDateTime: `${eventData.startDate}T${eventData.startTime}`,
-      endDateTime: `${eventData.endDate}T${eventData.endTime}`,
+      title: eventData.title,
+      description: eventData.description,
+      startDateTime: `${eventData.startDate}T${eventData.startTime}:00.000Z`,
+      endDateTime: `${eventData.endDate}T${eventData.endTime}:00.000Z`,
+      location: eventData.location,
+      isAllDay: eventData.isAllDay,
+      reminder: eventData.reminder,
+      reminderTime: eventData.reminderTime
     };
     onSave(eventPayload);
     closeModal();
@@ -54,11 +58,6 @@ const EditEventPopUp = ({ isOpen, closeModal, onSave, eventData: initialEventDat
     <div className="popup-overlay">
       <div className="popup-content">
         <h2>Edit Event</h2>
-
-        {/* Temporary debug info */}
-        <div className="debug-info">
-          <pre>{JSON.stringify(eventData, null, 2)}</pre> {/* Shows current eventData */}
-        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
