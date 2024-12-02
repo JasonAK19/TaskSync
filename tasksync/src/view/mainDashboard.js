@@ -277,6 +277,14 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     }
   };
 
+  const formatTime = (time) => {
+    if (!time) return ''; // Handle empty or undefined time
+    const [hour, minute] = time.split(':').map(Number); // Split time into hours and minutes
+    const ampm = hour >= 12 ? 'PM' : 'AM'; // Determine AM or PM
+    const formattedHour = hour % 12 || 12; // Convert 0 or 24 to 12 for 12-hour format
+    return `${formattedHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
+  };
+
   return (
     <div className="main-dashboard">
       <Sidebar userInfo={userInfo} onLogout={onLogout}
@@ -313,12 +321,11 @@ const MainDashboard = ({ username, userId, onLogout }) => {
             <div key={task._id} className="task">
               
               <div className="task-details">
-                <h4>{task.title}</h4>
-                <p>{task.description}</p>
+                <h4> Task:{' '} {task.title}</h4>
+                <p> Description:{' '} {task.description ? task.description : 'None'}</p>
               </div>
               <div className="task-date">
-                <h4>{task.date}</h4>
-                <h4>{task.time}</h4>
+                 <h4>Due:{' '} {task.date} {formatTime(task.time)}</h4>
               </div>
               <div className="task-options">
                 <button onClick={() => toggleTaskMenu(task._id)} className="task-menu">...</button>
@@ -357,12 +364,36 @@ const MainDashboard = ({ username, userId, onLogout }) => {
             <div key={events._id} className="task">
               
               <div className="task-details">
-                <h4>{events.title}</h4>
-                <p>{events.description}</p>
+                <h4> Event:{' '} {events.title}</h4>
+
+                <p> Description:{' '} {events.description ? events.description : 'None'}</p>
               </div>
-              <div className="task-date">
-                <h4>{events.date}</h4>
-                <h4>{events.time}</h4>
+              <div className="task-datetime">
+              <h4> Location:{' '} {events.location ? events.location : 'None'}</h4>
+                <h4>
+                From:{' '}
+                  {new Intl.DateTimeFormat('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  }).format(new Date(events.startDateTime))}
+                </h4>
+
+                <h4>
+                To:{' '}
+                  {new Intl.DateTimeFormat('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  }).format(new Date(events.endDateTime))}
+                </h4>
+
               </div>
               <div className="task-options">
                 <button onClick={() => toggleEventMenu(events._id)} className="task-menu">...</button>

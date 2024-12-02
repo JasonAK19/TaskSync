@@ -59,6 +59,14 @@ const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
     setShowTimePicker(prevState => !prevState);
   };
 
+  const formatTime = (time) => {
+    if (!time) return '';
+    const [hour, minute] = time.split(':').map(Number);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const formattedHour = hour % 12 || 12; // Convert 0 to 12 for 12-hour format
+    return `${formattedHour}:${minute.toString().padStart(2, '0')} ${ampm}`;
+  };
+
   if (!isOpen) return null; 
   return (
     <div className="modal">
@@ -86,7 +94,7 @@ const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
             <div className="time-input-container">
               <input
                 type="text"
-                value={taskTime}
+                value={formatTime(taskTime)}
                 onClick={toggleTimePicker}
                 readOnly
               />
@@ -101,7 +109,7 @@ const AddTaskPopUp = ({ isOpen, closeModal, onSave }) => {
                       className="time-option"
                       onClick={() => handleTimeChange(`${String(hour).padStart(2, '0')}:${half === 0 ? '00' : '30'}`)}
                     >
-                      {`${String(hour).padStart(2, '0')}:${half === 0 ? '00' : '30'}`}
+                      {formatTime(`${String(hour).padStart(2, '0')}:${half === 0 ? '00' : '30'}`)}
                     </div>
                   ))
                 )}
