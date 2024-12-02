@@ -7,7 +7,6 @@ import axios from 'axios';
 import './groupPage.css';
 import images from '../assets';
 
-
 const GroupPage = ({username}) => {
     const { groupId } = useParams();
     const [group, setGroup] = useState(null);
@@ -26,8 +25,6 @@ const GroupPage = ({username}) => {
     const [taskToEdit, setTaskToEdit] = useState(null);
     const [tasks, setTasks] = useState([]);const [newMessage, setNewMessage] = useState('');
     const ws = useRef(null);
-
-
 
     // Fetch group data on mount
     useEffect(() => {
@@ -116,70 +113,67 @@ const handleDeleteTask = async (taskId) => {
 };
 
 useEffect(() => {
-    const connectWebSocket = () => {
-      ws.current = new WebSocket('ws://localhost:8080');
-  
-      ws.current.onopen = () => {
-        console.log('WebSocket connection established');
-      };
-  
-      ws.current.onmessage = (event) => {
-        try {
-            const message = JSON.parse(event.data);
-            setMessages(prevMessages => {
-                // Add message only if it doesn't exist
-                const messageExists = prevMessages.some(msg => 
-                    msg.id === message.id || 
-                    (msg.sender === message.sender && 
-                     msg.text === message.text && 
-                     msg.timestamp === message.timestamp)
-                );
-                
-                if (!messageExists) {
-                    return [...prevMessages, message];
-                }
-                return prevMessages;
-            });
-        } catch (error) {
-            console.warn('Error parsing message:', error);
-        }
-    };
+  const connectWebSocket = () => {
+      ws.current = new WebSocket(`ws://localhost:8080?username=${username}`); // Pass username as a query parameter
 
-  
+      ws.current.onopen = () => {
+          console.log('WebSocket connection established');
+      };
+
+      ws.current.onmessage = (event) => {
+          try {
+              const message = JSON.parse(event.data);
+              setMessages(prevMessages => {
+                  const messageExists = prevMessages.some(
+                      msg => msg.id === message.id
+                  );
+                  if (!messageExists) {
+                      return [...prevMessages, message];
+                  }
+                  return prevMessages;
+              });
+          } catch (error) {
+              console.warn('Error parsing message:', error);
+          }
+      };
+
       ws.current.onclose = () => {
-        console.log('WebSocket connection closed, retrying...');
-        setTimeout(connectWebSocket, 3000); // Retry after 3 seconds
+          console.log('WebSocket connection closed, retrying...');
+          setTimeout(connectWebSocket, 3000); // Retry after 3 seconds
       };
-  
+
       ws.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
+          console.error('WebSocket error:', error);
       };
-    };
-  
-    connectWebSocket();
-  
-    return () => {
+  };
+
+  connectWebSocket();
+
+  return () => {
       if (ws.current) {
-        ws.current.close();
+          ws.current.close();
       }
-    };
-  }, []);
-  
-  const handleSendMessage = () => {
-    if (newMessage.trim() && ws.current?.readyState === WebSocket.OPEN) {
-        const messageData = {
-            id: Date.now() + Math.random().toString(36).substring(7),
-            sender: username,
-            text: newMessage.trim(),
-            timestamp: new Date().toISOString()
-        };
-        ws.current.send(JSON.stringify(messageData));
-        
-        // Add own message immediately
-        setMessages(prevMessages => [...prevMessages, messageData]);
-        setNewMessage('');
-    }
+  };
+}, [username]);
+
+const handleSendMessage = () => {
+  if (newMessage.trim() && ws.current?.readyState === WebSocket.OPEN) {
+      const messageData = {
+          id: Date.now() + Math.random().toString(36).substring(7), // Unique ID
+          sender: username,
+          text: newMessage.trim(),
+          timestamp: new Date().toISOString(),
+      };
+
+      // Send the message through WebSocket
+      ws.current.send(JSON.stringify(messageData));
+
+      // Optimistically update the chat (avoids duplication)
+      setMessages(prevMessages => [...prevMessages, messageData]);
+      setNewMessage(''); // Clear the input
+  }
 };
+
 
     return (
         <div className="group-page">

@@ -3,11 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import AddGroupPopUp from './addGroupPopUp.js';
+import AddTaskPopUp from './addTaskPopUp.js';
 import images from '../../assets';
 import MergeSchedulePopUp from './mergeSchedulePopUp.js';
 import './sidebar.css';
 
-const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopUp,onMergeSchedulePopUp, groups = [], setGroups }) => {
+const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopUp,onMergeSchedulePopUp, groups = [], setGroups, onOpenAddTask }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false); // State for the popup
   const navigate = useNavigate();
   const location = useLocation();
@@ -58,6 +59,9 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopU
         <button className="menu-item" onClick = {onOpenEventPopUp} >
           <img src={images['memo.png']} alt="task" className="menu-icon" /> Create Event
         </button>
+        <button className="menu-item" onClick={onOpenAddTask}>
+          <img src={images['more.png']} alt="task" className="menu-icon" /> Add New Task
+        </button>
 
         <button className="menu-item" onClick={onOpenAddGroupPopUp}>
           <img src={images['createGroups.png']} alt="task" className="menu-icon" /> Create Group
@@ -98,11 +102,7 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopU
         </button>
       </div>
 
-      {isPopupOpen && (
-        <AddGroupPopUp
-          onClose={() => setIsPopupOpen(false)}
-          onAddGroup={handleAddGroup}
-        />
+      {isPopupOpen && (<AddGroupPopUp onClose={() => setIsPopupOpen(false)} onAddGroup={handleAddGroup}/>
       )}
     </div>
   );

@@ -6,3 +6,4 @@ userSettings, flaticon : <a href="https://www.flaticon.com/free-icons/profile" t
 settings, flaticon : <a href="https://www.flaticon.com/free-icons/settings" title="settings icons">Settings icons created by Pixel perfect - Flaticon</a>
 signout, flaticon : <a href="https://www.flaticon.com/free-icons/signout" title="signout icons">Signout icons created by GelsoDesigns - Flaticon</a>
 bell, flaticon : <a href="https://www.flaticon.com/free-icons/bell" title="bell icons">Bell icons created by Stockio - Flaticon</a>
+plus, flaticon : <a href="https://www.flaticon.com/free-icons/add" title="add icons">Add icons created by reussy - Flaticon</a>

@@ -285,14 +285,12 @@ const MainDashboard = ({ username, userId, onLogout }) => {
         groups={groups} 
         setGroups={setGroups}
         onMergeSchedulePopUp={() => setIsMergeSchedulePopUpOpen(true)}
+        onOpenAddTask={() => setIsAddTaskPopUpOpen(true)}
          />
 
 <div className="main-content">
   <Header username={username} />
   <div className="content">
-    <div className="add-task-button">
-      <button className="add-new-task" onClick={() => setIsAddTaskPopUpOpen(true)}> Add New Tasks</button>
-    </div>
     
     <section className="task-section-box">
       <h3 className="task-box-title">Your Tasks</h3>
@@ -391,10 +389,6 @@ const MainDashboard = ({ username, userId, onLogout }) => {
           {/* Friends Section */}
           <div className="friends-section">
             {/* Friends Section Buttons */}
-          <div className="friend-buttons">
-            <button className="add-new" onClick={() => setIsFriendRequestPopUpOpen(true)}>Add New Friends</button>
-              <button className="show-all">Show All Friends</button>
-            </div>
             <h3>Friends</h3>
             <div className="friends-list">
               {friends.length === 0 ? (
@@ -407,6 +401,10 @@ const MainDashboard = ({ username, userId, onLogout }) => {
                   </div>
                 ))
               )}
+            </div>
+            <div className="friend-buttons">
+            <button className="add-new" onClick={() => setIsFriendRequestPopUpOpen(true)}>Add New Friends</button>
+              <button className="show-all">Show All Friends</button>
             </div>
           </div>
          
@@ -422,9 +420,9 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       {/* Event Popup */}
       <EventPopUp isOpen={isEventPopUpOpen} onClose={() => setIsEventPopUpOpen(false)} onSave={handleSaveEvent} />
 
-      {/* This line causes an error right now */}
-      <EditEventPopUp isOpen={isEditEventPopUpOpen} closeModal={() => {setIsEditEventPopUpOpen(false); setEventToEdit(null);}}
-  onSave={(eventPayload) => handleEditEvent(eventToEdit._id, eventPayload)} event={eventToEdit} />
+      {/* Edit Event Popup */}
+      <EditEventPopUp isOpen={isEditEventPopUpOpen} closeModal={() => {setIsEditEventPopUpOpen(false); setEventToEdit(null);}} onSave={(eventPayload) => handleEditEvent(eventToEdit._id, eventPayload)} event={eventToEdit} />
+
       {/* Add Group Popup */}
       <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} currentUser={username} />
       

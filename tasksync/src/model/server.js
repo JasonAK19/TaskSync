@@ -5,13 +5,12 @@ const cors = require('cors'); // Import the CORS middleware
 const deepEmailValidator = require('deep-email-validator');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
-
+const url = require('url');
 const connectToDatabase = require('./mongoConnection');
 const { addTask, getTasks, editTask } = require('./taskModel');
 const { ObjectId } = require('mongodb');
 const { create } = require('domain');
 const WebSocket = require('ws');
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server, {
@@ -32,38 +31,42 @@ app.use(bodyParser.json());
 let db;
 
 const wss = new WebSocket.Server({ port: 8080 });
+wss.on('connection', (ws, req) => {
+  const params = new URLSearchParams(new URL(req.url, `http://${req.headers.host}`).search);
+  const username = params.get('username');
+  ws.username = username;
 
-wss.on('connection', (ws) => {
-  console.log('New client connected');
-  
+  console.log(`New client connected: ${username}`);
+
   ws.on('message', (message) => {
-    // Parse the buffer to string and then to JSON
-    const messageString = message.toString();
-    console.log('Received message:', messageString);
-    
-    try {
-      const parsedMessage = JSON.parse(messageString);
-      // Add a unique message ID
-      parsedMessage.id = Date.now() + Math.random().toString(36).substring(7);
-      
-      // Broadcast the message to all clients except the sender
-      wss.clients.forEach((client) => {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(parsedMessage));
-        }
-      });
-    } catch (error) {
-      console.error('Error parsing message:', error);
-    }
+      try {
+          const parsedMessage = JSON.parse(message);
+
+          console.log(`Received message from ${username}:`, parsedMessage);
+
+          // Broadcast the message to all connected clients except the sender
+          wss.clients.forEach(client => {
+              if (client !== ws && client.readyState === WebSocket.OPEN) {
+                  client.send(message); // Send the original message
+              }
+          });
+      } catch (error) {
+          console.error('Error parsing message:', error);
+      }
   });
 
-  // Send welcome message
-  ws.send(JSON.stringify({ 
-    id: 'welcome-' + Date.now(),
-    sender: 'Server', 
-    text: 'Welcome to the group chat!',
-    timestamp: new Date().toISOString()
-  }));
+  ws.on('close', () => {
+      console.log(`Client disconnected: ${username}`);
+  });
+
+  ws.send(
+      JSON.stringify({
+          id: 'welcome-' + Date.now(),
+          sender: 'Server',
+          text: `Welcome to the group chat, ${username}!`,
+          timestamp: new Date().toISOString(),
+      })
+  );
 });
 
 // Connect to MongoDB
@@ -190,25 +193,38 @@ app.post('/tasks', async (req, res) => {
 
 // Edit an existing task
 app.put('/tasks/:taskId', async (req, res) => {
-  const { taskId } = req.params;
-  const updatedTask = req.body;
-  const { username } = req.body; // Add username to request body
-
   try {
-    // Check if user is the task creator
-    const task = await db.collection('tasks').findOne({ 
-      _id: new ObjectId(taskId),
-      username: username
-    });
+    const { taskId } = req.params;
+    const updates = req.body;
 
-    if (!task) {
-      return res.status(403).json({ error: 'Not authorized to edit this task' });
+    // Validate ObjectId
+    if (!ObjectId.isValid(taskId)) {
+      return res.status(400).json({ error: 'Invalid task ID' });
     }
 
-    const result = await editTask(new ObjectId(taskId), updatedTask);
-    // ... rest of the handler
-  } catch (err) {
-    // ... error handling
+    // Find and update the task
+    const result = await db.collection('tasks').findOneAndUpdate(
+      { _id: new ObjectId(taskId) },
+      { 
+        $set: {
+          title: updates.title,
+          description: updates.description,
+          dueDate: updates.dueDate,
+          status: updates.status,
+          updatedAt: new Date()
+        }
+      },
+      { returnDocument: 'after' }
+    );
+
+    if (!result.value) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    res.status(200).json(result.value);
+  } catch (error) {
+    console.error('Error updating task:', error);
+    res.status(500).json({ error: 'Failed to update task' });
   }
 });
 

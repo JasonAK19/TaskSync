@@ -153,3 +153,10 @@
     border-radius: 4px;
     cursor: default;
   }
+
+  .full-calendar-view .user-event {
+    background-color: #615382; 
+    border: 1px solid rgba(97, 83, 130, 0.1);
+    border-radius: 4px;
+  }
+  
