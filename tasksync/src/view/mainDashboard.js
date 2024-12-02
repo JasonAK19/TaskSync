@@ -9,6 +9,7 @@ import FriendRequestPopUp from './components/friendRequestPopUp';
 import MergeSchedulePopUp from './components/mergeSchedulePopUp';
 import CompactCalendar from './components/compactCalendar';
 import EventPopUp from './components/eventPopUp';
+import EditEventPopUp from './components/editEventPopUp';
 import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
@@ -96,9 +97,12 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [isAddGroupPopUpOpen, setIsAddGroupPopUpOpen] = useState(false); // State for AddGroupPopUp
   const [taskToEdit, setTaskToEdit] = useState(null);
   const [dropdownVisible, setTaskMenuVisible] = useState(null);
+  const [dropdownVisible1, setEventMenuVisible] = useState(null);
   const [isFriendRequestPopUpOpen, setIsFriendRequestPopUpOpen] = useState(false);
   const [groups, setGroups] = useState([]);
   const [isEventPopUpOpen, setIsEventPopUpOpen] = useState(false);
+  const [isEditEventPopUpOpen, setIsEditEventPopUpOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState(null);
   const [events, setEvents] = useState([]);
   const [isMergeSchedulePopUpOpen, setIsMergeSchedulePopUpOpen] = useState(false);
 
@@ -140,16 +144,6 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     getFriends();
     getEvents();
   }, [username]);
-
-  const handleAddTask = async (task) => {
-    try {
-      const response = await axios.post('/tasks', { username, task });
-      setTasks([...tasks, { ...task, _id: response.data.taskId, startDate: task.startDate, endDate: task.endDate }]);
-      setIsAddTaskPopUpOpen(false);
-    } catch (err) {
-      console.error('Failed to add task:', err);
-    }
-  };
   
   const handleAddGroup = async (groupData) => {
     try {
@@ -164,6 +158,17 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const openEditTaskPopup = (task) => {
     setTaskToEdit(task);
     setIsEditTaskPopUpOpen(true);
+  };
+
+  //Task Stuff
+  const handleAddTask = async (task) => {
+    try {
+      const response = await axios.post('/tasks', { username, task });
+      setTasks([...tasks, { ...task, _id: response.data.taskId, startDate: task.startDate, endDate: task.endDate }]);
+      setIsAddTaskPopUpOpen(false);
+    } catch (err) {
+      console.error('Failed to add task:', err);
+    }
   };
 
   const handleEditTask = async (taskId, updatedTask) => {
@@ -199,6 +204,12 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     setTaskMenuVisible(dropdownVisible === taskId ? null : taskId);
   };
 
+  //Event Stuff
+
+  const toggleEventMenu = (eventId) => {
+    setEventMenuVisible(dropdownVisible1 === eventId ? null : eventId);
+  };
+
   const handleSaveEvent = async (eventData) => {
     try {
       const response = await axios.post('/api/events', { ...eventData, createdBy: username });
@@ -208,6 +219,42 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       console.error('Failed to save event:', error);
     }
   };
+
+  const handleEditEvent = async (eventId, eventPayload) => {
+    try {
+      const response = await axios.put(`/api/events/${eventId}`, eventPayload);
+      if (response.status === 200) {
+        const eventPayload = events.map(event =>
+          event._id === eventId ? { ...event, ...eventPayload } : event
+        );
+        setEvents(eventPayload);
+        setIsEditEventPopUpOpen(false);
+      }
+    } catch (err) {
+      console.error('Failed to edit event:', err.response || err);
+    }
+  };
+
+  const openEditEventPopup = (event) => {
+    setEventToEdit(event);
+    setIsEditEventPopUpOpen(true);
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+  console.log('handleDeleteEvent called with eventId:', eventId);  // Check if the function is called
+  const isConfirmed = window.confirm("Are you sure you want to delete this event?");
+  if (!isConfirmed) return;
+
+  try {
+    const response = await axios.delete(`/api/events/${eventId}?username=${username}`);
+    console.log('Server response:', response);
+    if (response.status === 200) {
+      setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+    }
+  } catch (err) {
+    console.error('Failed to delete event:', err.response || err);
+  }
+};
 
 
   const handleMergeSchedules = async (friend, type) => {
@@ -285,8 +332,8 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       <h3 className="event-box-title">Your Events</h3>
 
   
-      <div className={`event-list-section ${tasks.length > 0 ? 'scrollable' : ''}`}>
-        {tasks.length === 0 ? (
+      <div className={`event-list-section ${events.length > 0 ? 'scrollable' : ''}`}>
+        {events.length === 0 ? (
           <div className="event">
             <div className="event-icon"></div>
             <div className="event-details">
@@ -298,23 +345,23 @@ const MainDashboard = ({ username, userId, onLogout }) => {
             </div>
           </div>
         ) : (
-          tasks.map(task => (
-            <div key={task._id} className="task">
+          events.map(events => (
+            <div key={events._id} className="task">
               
               <div className="task-details">
-                <h4>{task.title}</h4>
-                <p>{task.description}</p>
+                <h4>{events.title}</h4>
+                <p>{events.description}</p>
               </div>
               <div className="task-date">
-                <h4>{task.date}</h4>
-                <h4>{task.time}</h4>
+                <h4>{events.date}</h4>
+                <h4>{events.time}</h4>
               </div>
               <div className="task-options">
-                <button onClick={() => toggleTaskMenu(task._id)} className="task-menu">...</button>
-                {dropdownVisible === task._id && (
+                <button onClick={() => toggleEventMenu(events._id)} className="task-menu">...</button>
+                {dropdownVisible1 === events._id && (
                   <div className="dropdown-menu">
-                    <button onClick={() => openEditTaskPopup(task)}>Edit</button>
-                    <button onClick={() => handleDelete(task._id)}>Delete</button>
+                    <button onClick={() => openEditEventPopup(events)}>Edit</button>
+                    <button onClick={() => handleDeleteEvent(events._id)}>Delete</button>
                   </div>
                 )}
               </div>
@@ -361,6 +408,12 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       
       {/* Edit Task Popup */}
       <EditTaskPopUp isOpen={isEditTaskPopUpOpen} closeModal={() => setIsEditTaskPopUpOpen(false)} onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} onDelete={() => handleDelete(taskToEdit._id)} task={taskToEdit} />
+
+      {/* Event Popup */}
+      <EventPopUp isOpen={isEventPopUpOpen} onClose={() => setIsEventPopUpOpen(false)} onSave={handleSaveEvent} />
+
+      {/* This line causes an error right now */}
+      <EditEventPopUp isOpen={isEditEventPopUpOpen} closeModal={() => setIsEditEventPopUpOpen(false)} onSave={(eventPayload) => handleEditEvent(eventToEdit._id, eventPayload)} event={eventToEdit} /> 
 
       {/* Add Group Popup */}
       <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} currentUser={username} />
