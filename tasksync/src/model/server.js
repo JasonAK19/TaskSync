@@ -569,6 +569,7 @@ app.post('/api/groups/:groupId/events', async (req, res) => {
     const { title, description, startDateTime, endDateTime, location, isAllDay, reminder, reminderTime, createdBy } = req.body;
 
     const newEvent = {
+      groupId: new ObjectId(groupId),
       title,
       description,
       startDateTime: new Date(startDateTime),
@@ -653,7 +654,6 @@ app.post('/api/events', async (req, res) => {
     const { title, description, startDateTime, endDateTime, location, isAllDay, reminder, reminderTime, createdBy } = req.body;
 
     const newEvent = {
-      groupid,
       title,
       description,
       startDateTime: new Date(startDateTime),

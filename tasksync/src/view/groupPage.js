@@ -34,8 +34,7 @@ const GroupPage = ({username}) => {
 
     const [newMessage, setNewMessage] = useState('');
     const ws = useRef(null);
-    const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '' });
-    const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+    const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '' });
 
     // Fetch group data on mount
     useEffect(() => {
@@ -98,10 +97,12 @@ const GroupPage = ({username}) => {
     fetchGroupEvents();
   }, [groupId]);
 
+  /*
   const openEditTaskPopup = (task) => {
     setTaskToEdit(task);
     setIsEditTaskOpen(true);
   };
+*/
 
   const handleAddTask = async (taskData) => {
     try {
@@ -170,7 +171,7 @@ const openEditEventPopup = (event) => {
     setEventToEdit(event);
     setIsEditEventOpen(true);
   };
-
+/*
 const handleAddEvent = async (eventData) => {
     try {
         await axios.post(`/api/groups/${groupId}/events`, {...eventData, createdBy: username});
@@ -182,7 +183,7 @@ const handleAddEvent = async (eventData) => {
         console.error('Failed to add event:', error);
       }
   };
-
+*/
   const handleEditEvent = async (eventId, eventPayload) => {
     try {
       const response = await axios.put(`/api/events/${eventId}`, {
@@ -357,7 +358,7 @@ const handleSendMessage = () => {
                         {groupEvents.map(event => (
                             <div key={event.id} className="event-item">
                                 <h4> Event: {event.title}</h4>
-                                <p> Location:{' '} {events.location ? events.location : 'None'}</p>
+                                <p> Location: {event.location}</p>
                             </div>
                         ))}
                     </div>
