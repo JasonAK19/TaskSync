@@ -34,6 +34,8 @@ const GroupPage = ({username}) => {
 
     const [newMessage, setNewMessage] = useState('');
     const ws = useRef(null);
+    const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '', location: '' });
+    const [isAddEventOpen, setIsAddEventOpen] = useState(false);
 
     // Fetch group data on mount
     useEffect(() => {
@@ -70,6 +72,19 @@ const GroupPage = ({username}) => {
     fetchGroupTasks();
   }, [groupId]);
 
+  // Fetch group events
+  useEffect(() => {
+    const fetchGroupEvents = async () => {
+      try {
+        const response = await axios.get(`/api/groups/${groupId}/events`);
+        setGroupEvents(response.data);
+      } catch (error) {
+        console.error('Failed to fetch group events:', error);
+      }
+    };
+    fetchGroupEvents();
+  }, [groupId]);
+
   // Fetch group tasks
   useEffect(() => {
     const fetchGroupEvents = async () => {
@@ -98,6 +113,23 @@ const GroupPage = ({username}) => {
     } catch (error) {
       console.error('Failed to add task:', error);
     }
+  };
+
+  const handleAddEvent = async (eventData) => {
+    try {
+      await axios.post(`/api/groups/${groupId}/events`, eventData);
+      // Refresh events
+      const response = await axios.get(`/api/groups/${groupId}/events`);
+      setGroupEvents(response.data);
+      setIsAddEventOpen(false);
+    } catch (error) {
+      console.error('Failed to add event:', error);
+    }
+  };
+
+  const openEditTaskPopup = (task) => {
+    setTaskToEdit(task);
+    setIsEditTaskOpen(true);
   };
 
   const handleEditTask = async (taskId, updatedTask) => {
