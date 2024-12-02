@@ -31,44 +31,45 @@ app.use(bodyParser.json());
 let db;
 
 const wss = new WebSocket.Server({ port: 8080 });
+const groupConnections = new Map();
+
 wss.on('connection', (ws, req) => {
-  const params = new URLSearchParams(new URL(req.url, `http://${req.headers.host}`).search);
-  const username = params.get('username');
-  ws.username = username;
+  try {
+    const params = new URLSearchParams(new URL(req.url, `http://${req.headers.host}`).search);
+    const username = params.get('username');
+    const groupId = params.get('groupId');
+    
+    ws.username = username;
+    ws.groupId = groupId;
 
-  console.log(`New client connected: ${username}`);
+    // Add connection to group
+    if (!groupConnections.has(groupId)) {
+      groupConnections.set(groupId, new Set());
+    }
+    groupConnections.get(groupId).add(ws);
 
-  ws.on('message', (message) => {
-      try {
-          const parsedMessage = JSON.parse(message);
+    // Send messages within this connection scope
+    ws.send(JSON.stringify({
+      type: 'connection_established',
+      username: username,
+      groupId: groupId
+    }));
 
-          console.log(`Received message from ${username}:`, parsedMessage);
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+    });
 
-          // Broadcast the message to all connected clients except the sender
-          wss.clients.forEach(client => {
-              if (client !== ws && client.readyState === WebSocket.OPEN) {
-                  client.send(message); // Send the original message
-              }
-          });
-      } catch (error) {
-          console.error('Error parsing message:', error);
+    ws.on('close', () => {
+      if (groupConnections.has(groupId)) {
+        groupConnections.get(groupId).delete(ws);
       }
-  });
-
-  ws.on('close', () => {
-      console.log(`Client disconnected: ${username}`);
-  });
-
-  ws.send(
-      JSON.stringify({
-          id: 'welcome-' + Date.now(),
-          sender: 'Server',
-          text: `Welcome to the group chat, ${username}!`,
-          timestamp: new Date().toISOString(),
-      })
-  );
+    });
+  } catch (error) {
+    console.error('Connection error:', error);
+  }
 });
 
+  
 // Connect to MongoDB
 connectToDatabase().then(database => {
   db = database;
