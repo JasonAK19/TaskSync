@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import Header from './components/header';
 import AddGroupTaskPopup from './components/addGroupTaskPopUp';
 import EditGroupTaskPopup from './components/editGroupTaskPopUp';
+import AddGroupEventPopup from './components/addGroupEventPopUp';
 import axios from 'axios';
 import './groupPage.css';
 import images from '../assets';
@@ -20,10 +21,18 @@ const GroupPage = ({username}) => {
         time: '',
         assignedTo: ''
       });
+
+    const [tasks, setTasks] = useState([]);
     const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
     const [isEditTaskOpen, setIsEditTaskOpen] = useState(false);
     const [taskToEdit, setTaskToEdit] = useState(null);
-    const [tasks, setTasks] = useState([]);const [newMessage, setNewMessage] = useState('');
+
+    const [events, setEvents] = useState([]);
+    const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+    const [isEditEventOpen, setIsEditEventOpen] = useState(false);
+    const [eventToEdit, setEventToEdit] = useState(null);
+
+    const [newMessage, setNewMessage] = useState('');
     const ws = useRef(null);
 
     // Fetch group data on mount
@@ -61,6 +70,24 @@ const GroupPage = ({username}) => {
     fetchGroupTasks();
   }, [groupId]);
 
+  // Fetch group tasks
+  useEffect(() => {
+    const fetchGroupEvents = async () => {
+      try {
+        const response = await axios.get(`/api/groups/${groupId}/events`);
+        setGroupEvents(response.data);
+      } catch (error) {
+        console.error('Failed to fetch group events:', error);
+      }
+    };
+    fetchGroupEvents();
+  }, [groupId]);
+
+  const openEditTaskPopup = (task) => {
+    setTaskToEdit(task);
+    setIsEditTaskOpen(true);
+  };
+
   const handleAddTask = async (taskData) => {
     try {
       await axios.post(`/api/groups/${groupId}/tasks`, {...taskData, createdBy: username});
@@ -73,44 +100,96 @@ const GroupPage = ({username}) => {
     }
   };
 
-  const openEditTaskPopup = (task) => {
-    setTaskToEdit(task);
-    setIsEditTaskOpen(true);
-  };
-
   const handleEditTask = async (taskId, updatedTask) => {
     try {
-        console.log('Sending updated task:', updatedTask); // Debug updated task
-    
-        // Make a PUT request to update the task on the server
-        const response = await axios.put(`/api/groups/${groupId}/tasks/${taskId}`, updatedTask);
-    
-        console.log('Task successfully updated on the server:', response.data); // Debug server response
-    
-        // Refresh tasks after editing
-        const tasksResponse = await axios.get(`/api/groups/${groupId}/tasks?_=${Date.now()}`);
-        console.log('Fetched updated tasks:', tasksResponse.data); // Debug fetched tasks
-    
-        setGroupTasks(updatedTask);
+      const response = await axios.put(`/api/groups/${groupId}/tasks/${taskId}`, updatedTask);
+  
+      if (response.status === 200) {
+        const updatedTasks = tasks.map(task =>task._id === taskId ? { ...task, ...updatedTask } : task
+        );
+  
+        // Update the state with the new task list
+        setGroupTasks(updatedTasks);
         setIsEditTaskOpen(false);
+      } 
+    } catch (error) {
+      console.error("Failed to edit task:", error.response?.data || error.message);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this task?");
+    if (!isConfirmed) return;
+
+    try {
+        // Make DELETE request to the server
+        await axios.delete(`/api/groups/${groupId}/tasks/${taskId}`);
+        
+        // Update the state to reflect the task removal
+        setGroupTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+        console.log('Task deleted successfully');
       } catch (error) {
-        console.error('Failed to edit task:', error.response?.data || error.message); // Debug errors
+        console.error('Failed to delete task:', error);
+      }
+};
+
+//Event functions
+const openEditEventPopup = (event) => {
+    setEventToEdit(event);
+    setIsEditEventOpen(true);
+  };
+
+const handleAddEvent = async (eventData) => {
+    try {
+        await axios.post(`/api/groups/${groupId}/events`, {...eventData, createdBy: username});
+        // Refresh tasks
+        const response = await axios.get(`/api/groups/${groupId}/events`);
+        setGroupEvents(response.data);
+        setIsAddEventOpen(false);
+      } catch (error) {
+        console.error('Failed to add event:', error);
       }
   };
 
-const handleDeleteTask = async (taskId) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this task?");
-    if (!isConfirmed) return;
+  const handleEditEvent = async (eventId, eventPayload) => {
     try {
-      const response = await axios.delete(`/api/groups/${groupId}/tasks/${taskId}`);
+      const response = await axios.put(`/api/events/${eventId}`, {
+        ...eventPayload,
+        username // Add username 
+      });
+      
       if (response.status === 200) {
-        const updatedTasks = tasks.filter(task => task._id !== taskId);
-        setTasks(updatedTasks);
+        setEvents(
+          prevEvents => prevEvents.map(event => event._id === eventId ? { ...event, ...eventPayload } : event)
+        );
+        setIsEditEventOpen(false);
+        setEventToEdit(null);
       }
     } catch (err) {
-      console.error('Failed to delete task:', err);
+      console.error('Failed to edit event:', err);
+      alert('Failed to update event. Please try again.');
     }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+  console.log('handleDeleteEvent called with eventId:', eventId);  // Check if the function is called
+  const isConfirmed = window.confirm("Are you sure you want to delete this event?");
+  if (!isConfirmed) return;
+
+  try {
+    const response = await axios.delete(`/api/events/${eventId}`, {
+      params: { username } 
+    });
+
+    if (response.status === 200) {
+      setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+    }
+  } catch (err) {
+    console.error('Failed to delete event:', err);
+    alert('Failed to delete event. Please try again.');
+  }
 };
+
 
 useEffect(() => {
   const connectWebSocket = () => {
@@ -212,15 +291,18 @@ const handleSendMessage = () => {
                     task={taskToEdit}
                     groupMembers={group?.members || []}
                 />
+                <AddGroupEventPopup
+                    isOpen={isAddEventOpen}
+                    closeModal={() => setIsAddEventOpen(false)}
+                    onSave={handleAddEvent}
+                    groupMembers={group?.members || []}
+                />
                     <h3>Group Tasks</h3>
-                    <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true) }>
-                        Add Task
-                        </button>
-                    
+                    <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true) }> Add Task</button>
                     <div className="tasks-list">
                         {groupTasks.map(task => (
                             <div key={task.id} className="task-item">
-                                <h4>{task.title}</h4>
+                                <h4>Task: {task.title}</h4>
                                 <p>Assigned to: {task.assignedTo}</p>
                                 <p>Due: {new Date(task.date).toLocaleDateString(
                                     'en-US', {
@@ -238,12 +320,12 @@ const handleSendMessage = () => {
                 {/* Group Events Section */}
                 <section className="group-events">
                     <h3>Upcoming Events</h3>
-                    <button className="add-event-btn">Schedule Event</button>
+                    <button className="add-event-btn"  onClick={() => setIsAddEventOpen(true) }>Schedule Event</button>
                     <div className="events-list">
                         {groupEvents.map(event => (
                             <div key={event.id} className="event-item">
-                                <h4>{event.title}</h4>
-                                <p>Date: {new Date(event.date).toLocaleString()}</p>
+                                <h4> Event: {event.title}</h4>
+                                <p> Location:{' '} {events.location ? events.location : 'None'}</p>
                             </div>
                         ))}
                     </div>

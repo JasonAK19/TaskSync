@@ -175,8 +175,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     try {
       const response = await axios.put(`/tasks/${taskId}`, updatedTask);
       if (response.status === 200) {
-        const updatedTasks = tasks.map(task =>
-          task._id === taskId ? { ...task, ...updatedTask } : task
+        const updatedTasks = tasks.map(task => task._id === taskId ? { ...task, ...updatedTask } : task
         );
         setTasks(updatedTasks);
         setIsEditTaskPopUpOpen(false);
@@ -228,10 +227,8 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       });
       
       if (response.status === 200) {
-        setEvents(prevEvents => 
-          prevEvents.map(event => 
-            event._id === eventId ? { ...event, ...eventPayload } : event
-          )
+        setEvents(
+          prevEvents => prevEvents.map(event => event._id === eventId ? { ...event, ...eventPayload } : event)
         );
         setIsEditEventPopUpOpen(false);
         setEventToEdit(null);
