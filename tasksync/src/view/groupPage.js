@@ -114,60 +114,63 @@ const handleDeleteTask = async (taskId) => {
 
 useEffect(() => {
   const connectWebSocket = () => {
-    // Include both username and groupId in the connection URL
-    ws.current = new WebSocket(`ws://localhost:8080?username=${username}&groupId=${groupId}`);
+      ws.current = new WebSocket(`ws://localhost:8080?username=${username}`); // Pass username as a query parameter
 
-    ws.current.onopen = () => {
-      console.log('WebSocket connection established for group:', groupId);
-    };
+      ws.current.onopen = () => {
+          console.log('WebSocket connection established');
+      };
 
-    ws.current.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        setMessages(prevMessages => {
-          // Add check for groupId match
-          if (message.groupId === groupId && !prevMessages.some(msg => msg.id === message.id)) {
-            return [...prevMessages, message];
+      ws.current.onmessage = (event) => {
+          try {
+              const message = JSON.parse(event.data);
+              setMessages(prevMessages => {
+                  const messageExists = prevMessages.some(
+                      msg => msg.id === message.id
+                  );
+                  if (!messageExists) {
+                      return [...prevMessages, message];
+                  }
+                  return prevMessages;
+              });
+          } catch (error) {
+              console.warn('Error parsing message:', error);
           }
-          return prevMessages;
-        });
-      } catch (error) {
-        console.warn('Error parsing message:', error);
-      }
-    };
+      };
 
-    ws.current.onclose = () => {
-      console.log('WebSocket connection closed, retrying...');
-      setTimeout(connectWebSocket, 3000);
-    };
+      ws.current.onclose = () => {
+          console.log('WebSocket connection closed, retrying...');
+          setTimeout(connectWebSocket, 3000); // Retry after 3 seconds
+      };
 
-    ws.current.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
+      ws.current.onerror = (error) => {
+          console.error('WebSocket error:', error);
+      };
   };
+
   connectWebSocket();
 
   return () => {
-    if (ws.current) {
-      ws.current.close();
-    }
+      if (ws.current) {
+          ws.current.close();
+      }
   };
-}, [username, groupId]); // Add groupId to dependencies
+}, [username]);
 
-// Modify handleSendMessage to include groupId
 const handleSendMessage = () => {
   if (newMessage.trim() && ws.current?.readyState === WebSocket.OPEN) {
-    const messageData = {
-      id: Date.now() + Math.random().toString(36).substring(7),
-      sender: username,
-      text: newMessage.trim(),
-      timestamp: new Date().toISOString(),
-      groupId: groupId // Include groupId in message data
-    };
+      const messageData = {
+          id: Date.now() + Math.random().toString(36).substring(7), // Unique ID
+          sender: username,
+          text: newMessage.trim(),
+          timestamp: new Date().toISOString(),
+      };
 
-    ws.current.send(JSON.stringify(messageData));
-    setMessages(prevMessages => [...prevMessages, messageData]);
-    setNewMessage('');
+      // Send the message through WebSocket
+      ws.current.send(JSON.stringify(messageData));
+
+      // Optimistically update the chat (avoids duplication)
+      setMessages(prevMessages => [...prevMessages, messageData]);
+      setNewMessage(''); // Clear the input
   }
 };
 
