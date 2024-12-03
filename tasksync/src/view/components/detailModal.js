@@ -20,14 +20,25 @@ const DetailModal = ({ isOpen, onClose, item, groupNames }) => {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    try {
+      // Check if date is valid
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) {
+        return 'No date specified';
+      }
+      
+      return dateObj.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date Format';
+    }
   };
-
+  
   return (
     <div className="modal-overlay">
       <div className="detail-modal">

@@ -103,7 +103,14 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
       title: task.title,
       start: startDateTime,
       end: endDateTime,
-      className: 'task-event'
+      className: 'task-event',
+      extendedProps: {
+        description: task.description,
+        date: task.date,
+        time: task.time,
+        assignedTo: task.assignedTo,
+        type: 'task'  // Add type to differentiate tasks
+      }
     };
   });
   
@@ -167,7 +174,17 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
       title: event.title,
       start: new Date(startDate).toISOString(),
       end: new Date(endDate).toISOString(),
-      className: 'user-event'
+      className: 'user-event',
+      extendedProps: {
+        // Add these properties to ensure proper event classification
+        startDateTime: startDate,
+        endDateTime: endDate,
+        description: event.description,
+        location: event.location,
+        isAllDay: event.isAllDay,
+        reminder: event.reminder,
+        reminderTime: event.reminderTime
+      }
     };
   }).filter(event => event !== null);
 
@@ -226,6 +243,8 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
       ...eventData,
       title: clickInfo.event.title,
       start: clickInfo.event.start,
+      end: clickInfo.event.end,
+      date: clickInfo.event.start,
       end: clickInfo.event.end
     });
     setIsModalOpen(true);
