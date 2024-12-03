@@ -228,23 +228,28 @@ const openEditEventPopup = (event) => {
   };
 
   const handleDeleteEvent = async (eventId) => {
-  console.log('handleDeleteEvent called with eventId:', eventId);  // Check if the function is called
-  const isConfirmed = window.confirm("Are you sure you want to delete this event?");
-  if (!isConfirmed) return;
-
-  try {
-    const response = await axios.delete(`/api/events/${eventId}`, {
-      params: { username } 
-    });
-
-    if (response.status === 200) {
-      setEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+    if (!eventId || typeof eventId !== 'string') {
+      console.error('Invalid event ID:', eventId);
+      return;
     }
-  } catch (err) {
-    console.error('Failed to delete event:', err);
-    alert('Failed to delete event. Please try again.');
-  }
-};
+  
+    const isConfirmed = window.confirm("Are you sure you want to delete this event?");
+    if (!isConfirmed) return;
+  
+    try {
+      const response = await axios.delete(`/api/groups/${groupId}/events/${eventId}`);
+      
+      if (response.status === 200) {
+        // Update local state by filtering out the deleted event
+        setGroupEvents(prevEvents => prevEvents.filter(event => event._id !== eventId));
+        setIsEditEventOpen(false);
+        setEventToEdit(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      alert('Failed to delete event. Please try again.');
+    }
+  };
 
 const handleLeaveGroup = async () => {
   const isConfirmed = window.confirm("Are you sure you want to leave this group?");
@@ -471,6 +476,7 @@ const handleSendMessage = async () => {
                                     </p>
                                 
                                 <button onClick={() => openEditEventPopup(event)}>Edit Event</button>
+                                <button onClick={() => handleDeleteEvent(event._id)}>Delete Event</button> 
                             </div>
                         ))}
                     </div>

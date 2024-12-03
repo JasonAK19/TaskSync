@@ -880,10 +880,6 @@ app.put('/api/groups/:groupId/events/:eventId', async (req, res) => {
     }
   });
 
-  
-
-  
-
 // Get tasks for a group
 app.get('/api/groups/:groupId/tasks', async (req, res) => {
   try {
