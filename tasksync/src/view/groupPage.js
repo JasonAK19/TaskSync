@@ -154,55 +154,59 @@ const GroupPage = ({username}) => {
 
   const handleEditTask = async (taskId, updatedTask) => {
     try {
-      const response = await axios.put(`/api/groups/${groupId}/tasks/${taskId}`, updatedTask);
+      const response = await axios.put(`/api/groups/${groupId}/tasks/${taskId}`, {
+        title: updatedTask.title,
+        description: updatedTask.description,
+        date: updatedTask.date,
+        time: updatedTask.time,
+        assignedTo: updatedTask.assignedTo
+      });
   
       if (response.status === 200) {
-        const updatedTasks = tasks.map(task =>task._id === taskId ? { ...task, ...updatedTask } : task
+        // Update the local state
+        setGroupTasks(prevTasks => 
+          prevTasks.map(task => 
+            task._id === taskId ? response.data : task
+          )
         );
-  
-        // Update the state with the new task list
-        setGroupTasks(updatedTasks);
         setIsEditTaskOpen(false);
-      } 
+        setTaskToEdit(null);
+      }
     } catch (error) {
-      console.error("Failed to edit task:", error.response?.data || error.message);
+      console.error("Failed to edit task:", error);
+      alert('Failed to update task. Please try again.');
     }
   };
 
   const handleDeleteTask = async (taskId) => {
+    if (!taskId || typeof taskId !== 'string') {
+      console.error('Invalid task ID:', taskId);
+      return;
+    }
+  
     const isConfirmed = window.confirm("Are you sure you want to delete this task?");
     if (!isConfirmed) return;
-
+  
     try {
-        // Make DELETE request to the server
-        await axios.delete(`/api/groups/${groupId}/tasks/${taskId}`);
-        
-        // Update the state to reflect the task removal
-        setGroupTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-        console.log('Task deleted successfully');
-      } catch (error) {
-        console.error('Failed to delete task:', error);
+      const response = await axios.delete(`/api/groups/${groupId}/tasks/${taskId}`);
+      
+      if (response.status === 200) {
+        // Update local state by filtering out the deleted task
+        setGroupTasks(prevTasks => prevTasks.filter(task => task._id !== taskId));
+        setIsEditTaskOpen(false);
+        setTaskToEdit(null);
       }
-};
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      alert('Failed to delete task. Please try again.');
+    }
+  };
 
 //Event functions
 const openEditEventPopup = (event) => {
     setEventToEdit(event);
     setIsEditEventOpen(true);
   };
-/*
-const handleAddEvent = async (eventData) => {
-    try {
-        await axios.post(`/api/groups/${groupId}/events`, {...eventData, createdBy: username});
-        // Refresh tasks
-        const response = await axios.get(`/api/groups/${groupId}/events`);
-        setGroupEvents(response.data);
-        setIsAddEventOpen(false);
-      } catch (error) {
-        console.error('Failed to add event:', error);
-      }
-  };
-*/
   const handleEditEvent = async (eventId, eventPayload) => {
     try {
       const response = await axios.put(`/api/events/${eventId}`, {
@@ -423,8 +427,11 @@ const handleSendMessage = async () => {
                                         day: 'numeric'
                                     }
                                 )} at {task.time}</p>
-                                <button onClick={() => openEditTaskPopup(task)}>Edit Task</button>
+                                <button  className = "edit-task-btn" onClick={() => openEditTaskPopup(task)}>Edit Task</button>
+
+                                <button className = "delete-task-btn" onClick={() => handleDeleteTask(task._id)}>Delete Task</button>
                             </div>
+                            
                         ))}
                     </div>
                 </section>

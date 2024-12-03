@@ -711,6 +711,72 @@ app.post('/api/groups/:groupId/tasks', async (req, res) => {
   }
 });
 
+// Update group task endpoint
+app.put('/api/groups/:groupId/tasks/:taskId', async (req, res) => {
+  try {
+    const { groupId, taskId } = req.params;
+    const updateData = req.body;
+
+    // Validate IDs
+    if (!ObjectId.isValid(groupId) || !ObjectId.isValid(taskId)) {
+      return res.status(400).json({ message: 'Invalid group or task ID' });
+    }
+
+    // Find and update the task
+    const result = await db.collection('tasks').findOneAndUpdate(
+      { 
+        _id: new ObjectId(taskId), 
+        groupId: new ObjectId(groupId) 
+      },
+      { 
+        $set: {
+          title: updateData.title,
+          description: updateData.description,
+          date: new Date(updateData.date),
+          time: updateData.time,
+          assignedTo: updateData.assignedTo,
+          updatedAt: new Date()
+        } 
+      },
+      { returnDocument: 'after' }
+    );
+
+    if (!result.value) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.status(200).json(result.value);
+  } catch (error) {
+    console.error('Error updating task:', error);
+    res.status(500).json({ message: 'Failed to update task' });
+  }
+});
+
+// Delete group task
+app.delete('/api/groups/:groupId/tasks/:taskId', async (req, res) => {
+  try {
+    const { groupId, taskId } = req.params;
+
+    if (!ObjectId.isValid(groupId) || !ObjectId.isValid(taskId)) {
+      return res.status(400).json({ message: 'Invalid group or task ID' });
+    }
+
+    const result = await db.collection('tasks').deleteOne({
+      _id: new ObjectId(taskId),
+      groupId: new ObjectId(groupId)
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.status(200).json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    res.status(500).json({ message: 'Failed to delete task' });
+  }
+});
+
 //Craete group event
 app.post('/api/groups/:groupId/events', async (req, res) => {
   try {
