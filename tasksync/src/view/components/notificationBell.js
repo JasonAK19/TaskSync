@@ -137,7 +137,7 @@ const NotificationBell = ({ username }) => {
       console.log('Handling group invite:', groupId, action);
       
       // Update group membership status
-      await axios.put(`/api/groups/${groupId}/members`, {
+      const response = await axios.put(`/api/groups/${groupId}/members`, {
         action: action,
         userId: username
       });
@@ -161,6 +161,14 @@ const NotificationBell = ({ username }) => {
         // Update unread count if needed
         if (!notificationToDelete.read) {
           setUnreadCount(prev => Math.max(0, prev - 1));
+        }
+
+        if (action === 'accepted' && response.data.group) {
+          // Emit a custom event when group is joined
+          const customEvent = new CustomEvent('groupJoined', {
+            detail: response.data.group
+          });
+          window.dispatchEvent(customEvent);
         }
       }
       

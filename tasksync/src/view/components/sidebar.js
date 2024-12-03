@@ -27,9 +27,20 @@ const Sidebar = ({ userInfo = {}, onLogout, onOpenAddGroupPopUp, onOpenEventPopU
       }
     };
 
+    const handleGroupJoined = (event) => {
+      const newGroup = event.detail;
+      setGroups(prevGroups => [...prevGroups, newGroup]);
+    };
+
+    window.addEventListener('groupJoined', handleGroupJoined);
+
     if (userInfo.username) {
       fetchGroups();
     }
+
+    return () => {
+      window.removeEventListener('groupJoined', handleGroupJoined);
+    };
   }, [userInfo.username, setGroups]);
 
   const handleAddGroup = (groupName) => {

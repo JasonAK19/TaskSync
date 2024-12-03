@@ -10,6 +10,7 @@ import MergeSchedulePopUp from './components/mergeSchedulePopUp';
 import CompactCalendar from './components/compactCalendar';
 import EventPopUp from './components/eventPopUp';
 import EditEventPopUp from './components/editEventPopUp';
+import FriendsListPopUp from './components/friendsListPopUp';
 import axios from 'axios';
 import './mainDashboard.css';
 import images from '../assets';
@@ -105,6 +106,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
   const [eventToEdit, setEventToEdit] = useState(null);
   const [events, setEvents] = useState([]);
   const [isMergeSchedulePopUpOpen, setIsMergeSchedulePopUpOpen] = useState(false);
+  const [isFriendsListPopUpOpen, setIsFriendsListPopUpOpen] = useState(false);
 
 
   useEffect(() => {
@@ -261,6 +263,30 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     console.error('Failed to delete event:', err);
   }
 };
+
+const removeFriend = async (friendUsername) => {
+  const isConfirmed = window.confirm(`Are you sure you want to remove ${friendUsername} from your friends list?`);
+  if (!isConfirmed) return;
+
+  try {
+    const response = await axios.delete(`/api/friends/${username}/remove`, {
+      data: {
+        friendUsername,
+        currentUserId: userId 
+      }
+    });
+    
+    if (response.status === 200) {
+      // Update local state
+      setFriends(prevFriends => prevFriends.filter(friend => friend.username !== friendUsername));
+    }
+  } catch (error) {
+    console.error('Failed to remove friend:', error);
+    alert('Failed to remove friend. Please try again.');
+  }
+};
+
+
 
 
   const handleMergeSchedules = async (friend, type) => {
@@ -431,7 +457,7 @@ const MainDashboard = ({ username, userId, onLogout }) => {
             </div>
             <div className="friend-buttons">
             <button className="add-new" onClick={() => setIsFriendRequestPopUpOpen(true)}>Add New Friends</button>
-              <button className="show-all">Show All Friends</button>
+              <button className="show-all" onClick={() => setIsFriendsListPopUpOpen(true)}>Show All Friends</button>
             </div>
           </div>
          
@@ -454,13 +480,16 @@ const MainDashboard = ({ username, userId, onLogout }) => {
       <AddGroupPopUp isOpen={isAddGroupPopUpOpen} onClose={() => setIsAddGroupPopUpOpen(false)} onAddGroup={handleAddGroup} currentUser={username} />
       
       {/* Friend Request Popup */}
-      <FriendRequestPopUp isOpen={isFriendRequestPopUpOpen} onClose={() => setIsFriendRequestPopUpOpen(false)} currentUser={{username: username}} />
+      <FriendRequestPopUp isOpen={isFriendRequestPopUpOpen} onClose={() => setIsFriendRequestPopUpOpen(false)} currentUser={{username: username}}  />
 
       {/* Event Popup */}
       <EventPopUp isOpen={isEventPopUpOpen} onClose={() => setIsEventPopUpOpen(false)} onSave={handleSaveEvent} />
 
       {/* Merge Schedule Popup */}
       <MergeSchedulePopUp isOpen={isMergeSchedulePopUpOpen} onClose={() => setIsMergeSchedulePopUpOpen(false)} currentUser={username} onMerge={(friend, type) => {console.log(`Merged schedules with ${friend} for ${type}`);  }} />
+        
+        {/* Friends List Popup */}
+        <FriendsListPopUp isOpen={isFriendsListPopUpOpen} onClose={() => setIsFriendsListPopUpOpen(false)} friends={friends} onRemoveFriend={removeFriend} />
     </div>
   );
 };

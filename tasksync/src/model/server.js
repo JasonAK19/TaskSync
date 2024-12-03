@@ -450,10 +450,17 @@ app.post('/friend-requests', async (req, res) => {
       createdAt: new Date()
     };
 
-    await db.collection('Notification').insertOne(notification);
+    const notificationResult = await db.collection('Notification').insertOne(notification);
 
     // Emit notification
-    io.to(toUser._id.toString()).emit('newNotification', notification);
+    wss.clients.forEach(client => {
+      if (client.username === toUsername && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          type: 'notification',
+          notification: { ...notification, _id: notificationResult.insertedId }
+        }));
+      }
+    });
 
     res.status(201).json({ 
       message: 'Friend request sent successfully',
@@ -517,7 +524,39 @@ app.put('/friend-requests/:requestId', async (req, res) => {
   }
 });
 
-// In server.js, modify the notification creation endpoint:
+//delete friend
+app.delete('/api/friends/:username/remove', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { friendUsername } = req.body;
+
+    // First, get both users' documents to access their IDs
+    const currentUser = await db.collection('User').findOne({ username: username });
+    const friendUser = await db.collection('User').findOne({ username: friendUsername });
+
+    if (!currentUser || !friendUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Remove friend's ObjectId from current user's friends array
+    await db.collection('User').updateOne(
+      { username: username },
+      { $pull: { friends: friendUser._id } }
+    );
+
+    // Remove current user's ObjectId from friend's friends array
+    await db.collection('User').updateOne(
+      { username: friendUsername },
+      { $pull: { friends: currentUser._id } }
+    );
+
+    res.status(200).json({ message: 'Friend removed successfully' });
+  } catch (error) {
+    console.error('Error removing friend:', error);
+    res.status(500).json({ message: 'Failed to remove friend' });
+  }
+});
+
 app.post('/api/notifications', async (req, res) => {
   try {
     const { recipientUsername, message, type, groupId } = req.body;
@@ -879,7 +918,6 @@ app.post('/api/notifications', async (req, res) => {
   }
 });
 
-// Add this to server.js
 app.put('/api/groups/:groupId/members', async (req, res) => {
   try {
     const { groupId } = req.params;
@@ -899,7 +937,10 @@ app.put('/api/groups/:groupId/members', async (req, res) => {
       );
     }
 
-    res.status(200).json({ message: 'Group invitation handled successfully' });
+    const group = await db.collection('Group').findOne({ _id: new ObjectId(groupId) });
+
+
+    res.status(200).json({ message: 'Group invitation handled successfully', group: group });
   } catch (error) {
     console.error('Error handling group invitation:', error);
     res.status(500).json({ error: 'Failed to handle group invitation' });
