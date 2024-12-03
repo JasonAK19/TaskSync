@@ -332,7 +332,7 @@ const removeFriend = async (friendUsername) => {
             <div className="task-icon"></div>
             <div className="task-details">
               <h4>No Tasks Yet</h4>
-              <p>Select Add New Task button above to add a task</p>
+              <p>Select Add New Task button to add a task</p>
             </div>
             <div className="task-options">
               <button className="task-menu">...</button>

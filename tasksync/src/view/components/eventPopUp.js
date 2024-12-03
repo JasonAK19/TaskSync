@@ -31,7 +31,7 @@ const EventPopUp = ({ isOpen, onClose, onSave }) => {
 
   return (
     <div className="popup-overlay">
-      <div className="popup-content">
+      <div className="popup-content" >
         <h2>Create Event</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">

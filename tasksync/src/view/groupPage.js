@@ -207,16 +207,16 @@ const openEditEventPopup = (event) => {
     setEventToEdit(event);
     setIsEditEventOpen(true);
   };
+ 
   const handleEditEvent = async (eventId, eventPayload) => {
     try {
-      const response = await axios.put(`/api/events/${eventId}`, {
-        ...eventPayload,
-        username // Add username 
-      });
+      const response = await axios.put(`/api/groups/${groupId}/events/${eventId}`, eventPayload);
       
       if (response.status === 200) {
-        setEvents(
-          prevEvents => prevEvents.map(event => event._id === eventId ? { ...event, ...eventPayload } : event)
+        setGroupEvents(prevEvents => 
+          prevEvents.map(event => 
+            event._id === eventId ? { ...event, ...eventPayload } : event
+          )
         );
         setIsEditEventOpen(false);
         setEventToEdit(null);
@@ -348,7 +348,6 @@ const handleSendMessage = async () => {
         }
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message');
     }
   }
 };
@@ -396,6 +395,7 @@ const handleSendMessage = async () => {
                     onSave={(updatedTask) => handleEditTask(taskToEdit._id, updatedTask)} 
                     onDelete={() => handleDeleteTask(taskToEdit._id)} 
                     task={taskToEdit}
+                    event={eventToEdit}
                     groupMembers={group?.members || []}
                 />
                 <AddGroupEventPopup
