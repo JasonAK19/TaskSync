@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 import PropTypes from 'prop-types';
@@ -14,6 +14,56 @@ const NotificationBell = ({ username }) => {
   const [notifications, setNotifications] = useState([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [ws, setWs] = useState(null);
+
+  const connectWebSocket = useCallback(() => {
+    const websocket = new WebSocket(`ws://localhost:8080?username=${username}`);
+
+    websocket.onopen = () => {
+      console.log('WebSocket connection established for notifications');
+    };
+
+    websocket.onmessage = async (event) => {
+      try {
+        let data;
+        if (event.data instanceof Blob) {
+          data = JSON.parse(await event.data.text());
+        } else {
+          data = JSON.parse(event.data);
+        }
+
+        // Handle new notification
+        if (data.type === 'notification') {
+          setNotifications(prev => {
+            // Check if notification already exists
+            const exists = prev.some(n => n._id === data.notification._id);
+            if (!exists) {
+              // Update unread count
+              setUnreadCount(prevCount => prevCount + 1);
+              // Add new notification to the list
+              return [data.notification, ...prev];
+            }
+            return prev;
+          });
+        }
+      } catch (error) {
+        console.error('Error processing notification:', error);
+      }
+    };
+
+    websocket.onclose = () => {
+      console.log('WebSocket connection closed, attempting to reconnect...');
+      setTimeout(connectWebSocket, 3000);
+    };
+
+    setWs(websocket);
+
+    return () => {
+      if (websocket) {
+        websocket.close();
+      }
+    };
+  }, [username]);
 
   useEffect(() => {
     if (!username) {
@@ -34,17 +84,17 @@ const NotificationBell = ({ username }) => {
     };
 
     fetchNotifications();
+    connectWebSocket();
 
-    socket.on('newNotification', (notification) => {
-      console.log('New notification received:', notification);
-      if (notification.username === username) {
-        setNotifications(prev => [notification, ...prev]);
-        setUnreadCount(prev => prev + 1);
+    
+    return () => {
+      if (ws) {
+        ws.close();
       }
-    });
+    };
+   
 
-    return () => socket.off('newNotification');
-  }, [username]);
+  }, [username, connectWebSocket]);
 
   const handleFriendRequest = async (requestId, action) => {
     try {

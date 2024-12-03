@@ -517,6 +517,60 @@ app.put('/friend-requests/:requestId', async (req, res) => {
   }
 });
 
+// In server.js, modify the notification creation endpoint:
+app.post('/api/notifications', async (req, res) => {
+  try {
+    const { recipientUsername, message, type, groupId } = req.body;
+
+    const recipient = await db.collection('User').findOne({ username: recipientUsername });
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient not found' });
+    }
+
+    const notification = {
+      userId: recipient._id,
+      type: type,
+      groupId: groupId ? new ObjectId(groupId) : null,
+      message: message,
+      read: false,
+      handled: false,
+      createdAt: new Date()
+    };
+
+    const result = await db.collection('Notification').insertOne(notification);
+    
+    // Broadcast the new notification through WebSocket
+    wss.clients.forEach(client => {
+      if (client.username === recipientUsername && client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          type: 'notification',
+          notification: { ...notification, _id: result.insertedId }
+        }));
+      }
+    });
+
+    res.status(201).json({ notificationId: result.insertedId });
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
+
+// Handle WebSocket connections for notifications
+wss.on('connection', (ws, req) => {
+  const params = new URLSearchParams(new URL(req.url, `http://${req.headers.host}`).search);
+  const username = params.get('username');
+  ws.username = username;
+
+  ws.on('message', async (data) => {
+    // Handle any client-side messages if needed
+  });
+
+  ws.on('close', () => {
+    console.log(`Client disconnected: ${username}`);
+  });
+});
+
 // Get friends for a user
 app.get('/friends/:username', async (req, res) => {
   const { username } = req.params;
