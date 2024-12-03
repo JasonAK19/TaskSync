@@ -337,7 +337,6 @@ const handleSendMessage = async () => {
                 <div className="group-actions">
                     
                     <button onClick={openInvitePopup} className="invite-button">Invite Friends</button>
-                    <button className="leave-button" onClick={handleLeaveGroup}>Leave Group</button>
                 </div>
 
                 </h1>
