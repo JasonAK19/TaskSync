@@ -292,6 +292,30 @@ const handleSendMessage = () => {
   }
 };
 
+const handleLeaveGroup = async () => {
+    const isConfirmed = window.confirm(
+        "Are you sure you want to leave this group? You won't be able to rejoin unless invited again."
+    );
+    if (!isConfirmed) return;
+
+    try {
+        const response = await axios.delete(`/api/groups/${groupId}/members`, {
+            members,
+            username, // Pass the username to identify the leaving member
+        });
+
+        if (response.status === 200) {
+            alert("You have successfully left the group.");
+            // Optionally, redirect the user to another page (e.g., the homepage)
+            window.location.href = '/dashboard'; // Adjust the redirect as needed
+        }
+    } catch (error) {
+        console.error("Failed to leave group:", error.response?.data || error.message);
+        alert("Failed to leave the group. Please try again later.");
+    }
+};
+
+
     return (
         <div className="group-page">
             <Header username={username} />
@@ -302,7 +326,7 @@ const handleSendMessage = () => {
                 <div className="group-actions">
                     
                     <button onClick={openInvitePopup} className="invite-button">Invite Friends</button>
-                    <button className="leave-button" onClick={handleSendMessage}>Leave Group</button>
+                    <button className="leave-button" onClick={handleLeaveGroup}>Leave Group</button>
                 </div>
 
                 </h1>
