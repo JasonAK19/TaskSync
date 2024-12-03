@@ -4,6 +4,7 @@ import Header from './components/header';
 import AddGroupTaskPopup from './components/addGroupTaskPopUp';
 import EditGroupTaskPopup from './components/editGroupTaskPopUp';
 import AddGroupEventPopup from './components/addGroupEventPopUp';
+import EditGroupEventPopup from './components/editGroupEventPopUp';
 import axios from 'axios';
 import './groupPage.css';
 import images from '../assets';
@@ -297,6 +298,14 @@ const handleSendMessage = () => {
                     onSave={handleAddEvent}
                     groupMembers={group?.members || []}
                 />
+                <EditGroupEventPopup
+                    isOpen={isEditEventOpen}
+                    closeModal={() => setIsEditEventOpen(false)}
+                    onSave={(eventPayload) => handleEditEvent(eventToEdit._id, eventPayload)} 
+                    onDelete={() => handleDeleteEvent(eventToEdit._id)} 
+                    task={eventToEdit}
+                    groupMembers={group?.members || []}
+                />
                     <h3>Group Tasks</h3>
                     <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true) }> Add Task</button>
                     <div className="tasks-list">
@@ -324,8 +333,32 @@ const handleSendMessage = () => {
                     <div className="events-list">
                         {groupEvents.map(event => (
                             <div key={event.id} className="event-item">
-                                <h4> Event: {event.title}</h4>
-                                <p> Location:{' '} {events.location ? events.location : 'None'}</p>
+                                <h4> Event: {events.title}</h4>
+                                <p> Location:{' '} {events.location}</p>
+                                <p>
+                                From:{' '}
+                                {new Intl.DateTimeFormat('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true,
+                                }).format(new Date(events.startDateTime))}
+                                </p>
+
+                                <p>
+                                To:{' '}
+                                {new Intl.DateTimeFormat('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true,
+                                }).format(new Date(events.endDateTime))}
+                                </p>
+                                <button onClick={() => openEditEventPopup(events)}>Edit Event</button>
                             </div>
                         ))}
                     </div>
