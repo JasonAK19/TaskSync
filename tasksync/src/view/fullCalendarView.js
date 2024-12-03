@@ -14,6 +14,7 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
   const [sharedTasks, setSharedTasks] = useState([]);
   const [events, setEvents] = useState([]);
   const [sharedEvents, setSharedEvents] = useState([]);
+  const [groupEvents, setGroupEvents] = useState([]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -65,13 +66,24 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
 
         const sharedEventsResponse = await axios.get(`/api/events/shared/${username}`);
         setSharedEvents(sharedEventsResponse.data);
+        // Fetch all events for each group
+        const allGroupEventsPromises = groups.map(group => 
+          axios.get(`/api/groups/${group._id}/events`)
+            .then(response => response.data.map(event => ({
+              ...event,
+              groupId: group._id
+            })))
+        );
+        const groupEventsResponses = await Promise.all(allGroupEventsPromises);
+        const allGroupEvents = groupEventsResponses.flatMap(events => events);
+        setGroupEvents(allGroupEvents);
       } catch (error) {
         console.error('Failed to fetch events:', error);
       }
     };
 
     fetchEvents();
-  }, [username]);
+  }, [username, groups]);
 
   const ownTaskEvents = ownTasks.map(task => {
     const taskDate = new Date(task.date).toISOString().split('T')[0];
@@ -121,6 +133,7 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
     const [hours, minutes] = (task.time || '09:00').split(':');
     const endHour = String(Number(hours) + 1).padStart(2, '0');
     const endDateTime = `${taskDate}T${endHour}:${minutes}:00`;
+
   
     return {
       id: task._id,
@@ -173,8 +186,26 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
       editable: false
     };
   }).filter(event => event !== null);
+
+  const groupEventItems = groupEvents.map(event => {
+  return {
+    id: event._id,
+    title: `${groupNames[event.groupId] || 'Group'}\n${event.title}`,
+    start: new Date(event.startDateTime).toISOString(),
+    end: new Date(event.endDateTime).toISOString(),
+    className: 'group-event',
+    extendedProps: {
+      description: event.description,
+      location: event.location,
+      isAllDay: event.isAllDay,
+      reminder: event.reminder,
+      reminderTime: event.reminderTime,
+      createdBy: event.createdBy
+    }
+  };
+});
   
-  const allEvents = [...ownTaskEvents, ...sharedTaskEvents, ...groupTaskEvents, ...userEvents, ...sharedEventItems];
+  const allEvents = [...ownTaskEvents, ...sharedTaskEvents, ...groupTaskEvents, ...userEvents, ...sharedEventItems, ...groupEventItems];
   console.log('All Events:', allEvents);
 
   const eventContent = (arg) => {

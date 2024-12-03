@@ -159,4 +159,9 @@
     border: 1px solid rgba(97, 83, 130, 0.1);
     border-radius: 4px;
   }
+
+  .full-calendar-view .group-event{
+    background-color: #362f48; 
+
+  }
   

@@ -562,6 +562,113 @@ app.post('/api/groups/:groupId/tasks', async (req, res) => {
   }
 });
 
+//Craete group event
+app.post('/api/groups/:groupId/events', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { title, description, startDateTime, endDateTime, location, isAllDay, reminder, reminderTime, createdBy } = req.body;
+
+    const newEvent = {
+      groupId: new ObjectId(groupId),
+      title,
+      description,
+      startDateTime: new Date(startDateTime),
+      endDateTime: new Date(endDateTime),
+      location,
+      isAllDay:Boolean(isAllDay),
+      reminder:Boolean(reminder),
+      reminderTime:Number(reminderTime) || 15,
+      createdBy: createdBy,
+      createdAt: new Date(),
+      sharedWith: []
+    };
+
+    // Verify user exists before creating event
+
+    const result = await db.collection('Event').insertOne(newEvent);
+    res.status(201).json({ eventId: result.insertedId, ...newEvent });
+    console.log('Event created:', newEvent);
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).json({ error: 'Failed to create event' });
+  }
+});
+
+//get group events
+app.get('/api/groups/:groupId/events', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const events = await db.collection('Event').find({ groupId: new ObjectId(groupId) }).sort({ startDateTime: 1 }).toArray();
+
+    res.status(200).json(events);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch group events' });
+  }
+});
+
+//update group event
+app.put('/api/groups/:groupId/events/:eventId', async (req, res) => {
+  try {
+    const { groupId, eventId } = req.params;
+    const updates = req.body;
+
+    // Validate ObjectId
+    if (!ObjectId.isValid(eventId)) {
+      return res.status(400).json({ error: 'Invalid event ID' });
+    }
+
+      // Find and update the event
+      const result = await db.collection('Event').findOneAndUpdate(
+        { _id: new ObjectId(eventId), groupId: new ObjectId(groupId) },
+        { 
+          $set: {
+            title: updates.title,
+            description: updates.description,
+            startDateTime: new Date(updates.startDateTime),
+            endDateTime: new Date(updates.endDateTime),
+            location: updates.location,
+            isAllDay: updates.isAllDay,
+            reminder: updates.reminder,
+            reminderTime: updates.reminderTime,
+            updatedAt: new Date()
+          }
+        },
+        { returnDocument: 'after' }
+      );
+  
+      if (!result.value) {
+        return res.status(404).json({ error: 'Event not found' });
+      }
+  
+      res.status(200).json(result.value);
+    } catch (error) {
+      console.error('Error updating event:', error);
+      res.status(500).json({ error: 'Failed to update event' });
+    }
+  });
+  
+  // Delete a group event
+  app.delete('/api/groups/:groupId/events/:eventId', async (req, res) => {
+    try {
+      const { groupId, eventId } = req.params;
+  
+      const result = await db.collection('Event').deleteOne({ _id: new ObjectId(eventId), groupId: new ObjectId(groupId) });
+  
+      if (result.deletedCount > 0) {
+        res.status(200).json({ message: 'Event deleted successfully' });
+      } else {
+        res.status(404).json({ error: 'Event not found' });
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      res.status(500).json({ error: 'Failed to delete event' });
+    }
+  });
+
+  
+
+  
+
 // Get tasks for a group
 app.get('/api/groups/:groupId/tasks', async (req, res) => {
   try {
@@ -637,7 +744,7 @@ app.post('/api/events', async (req, res) => {
   }
 });
 
-/// Fetch events for a user
+// Fetch events for a user
 app.get('/api/events/:username', async (req, res) => {
   try {
     const { username } = req.params;
