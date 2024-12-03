@@ -300,7 +300,7 @@ const handleLeaveGroup = async () => {
 
     try {
         const response = await axios.delete(`/api/groups/${groupId}/members`, {
-            members,
+            //members,
             username, // Pass the username to identify the leaving member
         });
 
