@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './inviteFriendsPopUp.css';
 
-const InviteFriendsPopUp = ({ isOpen, onClose, onAddGroup, currentUser }) => {
+const InviteFriendsPopUp = ({ isOpen, onClose, onAddGroup, currentUser, groupId }) => {
   const [groupName, setGroupName] = useState('');
   const [searchUser, setSearchUser] = useState('');
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -46,29 +46,33 @@ const InviteFriendsPopUp = ({ isOpen, onClose, onAddGroup, currentUser }) => {
     setSelectedUsers(selectedUsers.filter(user => user !== username));
   };
 
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (selectedUsers.length === 0) {
       alert('Please add at least one friend to the group');
       return;
     }
-
-    const groupData = {
-      name: groupName,
-      members: [...selectedUsers, currentUser],
-      creator: currentUser
-    };
-
+  
     try {
-      await onAddGroup(groupData);
-      setGroupName('');
+      await Promise.all(selectedUsers.map(async (username) => {
+        await axios.post('/api/notifications', {
+          recipientUsername: username,
+          type: 'groupInvite',
+          groupId: groupId,
+          message: `${currentUser} invited you to join a group`,
+        });
+      }));
+  
       setSelectedUsers([]);
       onClose();
     } catch (error) {
-      console.error('Error creating group:', error);
-      alert('Failed to create group. Please try again.');
+      console.error('Error inviting friends:', error);
+      alert('Failed to invite friends. Please try again.');
     }
   };
+
+  
 
   const filteredFriends = friends.filter(friend =>
     friend.username.toLowerCase().includes(searchUser.toLowerCase()) &&

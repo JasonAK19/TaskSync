@@ -223,6 +223,14 @@
 }
 
 .leave-button {
-  background-color: #f44336; /* Example red color */
+  background-color: #dc3545;
   color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.leave-button:hover {
+  background-color: #c82333;
 }

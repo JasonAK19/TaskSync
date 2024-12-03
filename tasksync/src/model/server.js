@@ -1,3 +1,7 @@
+const MAX_CONNECTIONS = 1000;
+const MAX_MESSAGE_SIZE = 1024 * 1024;
+let connectionCount = 0;
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -60,7 +64,7 @@ wss.on('connection', (ws, req) => {
         text: parsedMessage.text,
         timestamp: new Date().toISOString()
       });
-      
+
       wss.clients.forEach(client => {
         if (client !== ws && client.readyState === WebSocket.OPEN) {
           client.send(broadcastMessage);
@@ -760,6 +764,93 @@ app.get('/api/groups/:groupId', async (req, res) => {
   }
 });
 
+// leave group
+app.delete('/api/groups/:groupId/members', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { username } = req.body;
+
+    const result = await db.collection('Group').updateOne(
+      { _id: new ObjectId(groupId) },
+      { $pull: { members: username } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ error: 'Group not found or user not in group' });
+    }
+
+    // Also remove group from user's groups array
+    await db.collection('User').updateOne(
+      { username: username },
+      { $pull: { groups: new ObjectId(groupId) } }
+    );
+
+    res.status(200).json({ message: 'Successfully left group' });
+  } catch (error) {
+    console.error('Error leaving group:', error);
+    res.status(500).json({ error: 'Failed to leave group' });
+  }
+});
+
+// Addd member to group
+app.post('/api/notifications', async (req, res) => {
+  try {
+    const { recipientUsername, message, type, groupId } = req.body;
+
+    // Find recipient user
+    const recipient = await db.collection('User').findOne({ username: recipientUsername });
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient not found' });
+    }
+
+    const notification = {
+      userId: recipient._id,
+      type: type,
+      groupId: new ObjectId(groupId),
+      message: message,
+      read: false,
+      handled: false,
+      createdAt: new Date()
+    };
+
+    const result = await db.collection('Notification').insertOne(notification);
+    
+    // Emit notification through socket.io
+    io.to(recipient._id.toString()).emit('newNotification', notification);
+
+    res.status(201).json({ notificationId: result.insertedId });
+  } catch (error) {
+    console.error('Error creating notification:', error);
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
+
+// Add this to server.js
+app.put('/api/groups/:groupId/members', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { action, userId } = req.body;
+
+    if (action === 'accepted') {
+      // Add user to group
+      await db.collection('Group').updateOne(
+        { _id: new ObjectId(groupId) },
+        { $addToSet: { members: userId } }
+      );
+
+      // Add group to user's groups
+      await db.collection('User').updateOne(
+        { username: userId },
+        { $addToSet: { groups: new ObjectId(groupId) } }
+      );
+    }
+
+    res.status(200).json({ message: 'Group invitation handled successfully' });
+  } catch (error) {
+    console.error('Error handling group invitation:', error);
+    res.status(500).json({ error: 'Failed to handle group invitation' });
+  }
+});
 
 // Create a new event
 app.post('/api/events', async (req, res) => {

@@ -259,7 +259,6 @@ const MainDashboard = ({ username, userId, onLogout }) => {
     }
   } catch (err) {
     console.error('Failed to delete event:', err);
-    alert('Failed to delete event. Please try again.');
   }
 };
 

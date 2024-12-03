@@ -242,6 +242,23 @@ const handleAddEvent = async (eventData) => {
   }
 };
 
+const handleLeaveGroup = async () => {
+  const isConfirmed = window.confirm("Are you sure you want to leave this group?");
+  if (!isConfirmed) return;
+
+  try {
+    await axios.delete(`/api/groups/${groupId}/members`, {
+      data: { username }  // Send username in request body
+    });
+    
+    // Redirect to dashboard
+    window.location.href = '/dashboard';
+  } catch (error) {
+    console.error('Error leaving group:', error);
+    alert('Failed to leave group. Please try again.');
+  }
+};
+
 
 useEffect(() => {
   const connectWebSocket = () => {
@@ -335,8 +352,8 @@ const handleSendMessage = async () => {
             <section className="group-header">
                 <h1>{group?.name}
                 <div className="group-actions">
-                    
                     <button onClick={openInvitePopup} className="invite-button">Invite Friends</button>
+                    <button onClick={handleLeaveGroup} className="leave-button">Leave Group</button>
                 </div>
 
                 </h1>
@@ -390,6 +407,7 @@ const handleSendMessage = async () => {
                 isOpen={isInvitePopupOpen}
                 onClose={closeInvitePopup}
                 groupId={groupId} // Pass the current group ID
+                currentUser={username} // Pass the current
                 />
                     <h3>Group Tasks</h3>
                     <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true) }> Add Task</button>
