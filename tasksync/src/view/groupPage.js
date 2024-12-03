@@ -310,6 +310,16 @@ const handleSendMessage = async () => {
       await axios.post(`/api/groups/${groupId}/messages`, messageData);
       
       setNewMessage('');
+        const response = await axios.delete(`/api/groups/${groupId}/members`, {
+            //members,
+            username, // Pass the username to identify the leaving member
+        });
+
+        if (response.status === 200) {
+            alert("You have successfully left the group.");
+            // Optionally, redirect the user to another page (e.g., the homepage)
+            window.location.href = '/dashboard'; // Adjust the redirect as needed
+        }
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message');
