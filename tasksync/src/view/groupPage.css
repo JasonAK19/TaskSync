@@ -202,3 +202,27 @@
       font-size: 2rem;
     }
   }
+
+.group-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Add spacing between buttons */
+}
+
+.group-actions .invite-button, .group-actions .leave-button {
+  /* Optional: Add consistent button styles */
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.invite-button {
+  background-color: #4B3A71; /* Example green color */
+  color: white;
+}
+
+.leave-button {
+  background-color: #f44336; /* Example red color */
+  color: white;
+}
