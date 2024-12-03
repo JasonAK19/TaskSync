@@ -366,32 +366,34 @@ const handleSendMessage = () => {
                     <div className="events-list">
                         {groupEvents.map(event => (
                             <div key={event.id} className="event-item">
-                                <h4> Event: {events.title}</h4>
-                                <p> Location:{' '} {events.location}</p>
-                                <p>
-                                From:{' '}
-                                {new Intl.DateTimeFormat('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: true,
-                                }).format(new Date(events.startDateTime))}
-                                </p>
+                                <h4> Event: {event.title}</h4>
+                                <p> Location:{' '} {event.location ? event.location : 'None'}</p>
 
                                 <p>
-                                To:{' '}
-                                {new Intl.DateTimeFormat('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: true,
-                                }).format(new Date(events.endDateTime))}
-                                </p>
-                                <button onClick={() => openEditEventPopup(events)}>Edit Event</button>
+                                    From:{' '}
+                                    {new Intl.DateTimeFormat('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: true,
+                                    }).format(new Date(event.startDateTime))}
+                                    </p>
+
+                                    <p>
+                                    To:{' '}
+                                    {new Intl.DateTimeFormat('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: true,
+                                    }).format(new Date(event.endDateTime))}
+                                    </p>
+                                
+                                <button onClick={() => openEditEventPopup(event)}>Edit Event</button>
                             </div>
                         ))}
                     </div>
