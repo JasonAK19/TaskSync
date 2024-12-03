@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import './addGroupEventPopUp.css';
+import './editGroupEventPopUp.css';
 
-const AddGroupEventPopUp = ({ isOpen, closeModal, onSave, onDelete }) => {
+const EditGroupEventPopUp = ({ isOpen, closeModal, onSave, onDelete }) => {
   const [eventData, setEventData] = useState({
     title: '',
     description: '',
@@ -141,4 +141,4 @@ const AddGroupEventPopUp = ({ isOpen, closeModal, onSave, onDelete }) => {
   );
 };
 
-export default AddGroupEventPopUp;
+export default EditGroupEventPopUp;

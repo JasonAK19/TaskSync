@@ -5,6 +5,7 @@ import AddGroupTaskPopup from './components/addGroupTaskPopUp';
 import EditGroupTaskPopup from './components/editGroupTaskPopUp';
 import AddGroupEventPopup from './components/addGroupEventPopUp';
 import EditGroupEventPopup from './components/editGroupEventPopUp';
+import InviteFriendsPopup from './components/inviteFriendsPopUp';
 import axios from 'axios';
 import './groupPage.css';
 import images from '../assets';
@@ -36,6 +37,10 @@ const GroupPage = ({username}) => {
     const [newMessage, setNewMessage] = useState('');
     const ws = useRef(null);
     const [newEvent, setNewEvent] = useState({ title: '', date: '', time: '' });
+
+    const [isInvitePopupOpen, setIsInvitePopupOpen] = useState(false);
+    const openInvitePopup = () => setIsInvitePopupOpen(true);
+    const closeInvitePopup = () => setIsInvitePopupOpen(false);
 
     // Fetch group data on mount
     useEffect(() => {
@@ -287,14 +292,22 @@ const handleSendMessage = () => {
   }
 };
 
-
     return (
         <div className="group-page">
             <Header username={username} />
 
             {/* Group Info Section */}
             <section className="group-header">
-                <h1>{group?.name}</h1>
+                <h1>{group?.name}
+                <div className="group-actions">
+                    
+                    <button onClick={openInvitePopup} className="invite-button">Invite Friends</button>
+                    <button className="leave-button" onClick={handleSendMessage}>Leave Group</button>
+                </div>
+
+                </h1>
+                
+
                 <div className="group-members">
                     <h3>Members</h3>
                     <div className="members-list">
@@ -338,6 +351,11 @@ const handleSendMessage = () => {
                     onDelete={() => handleDeleteEvent(eventToEdit._id)} 
                     task={eventToEdit}
                     groupMembers={group?.members || []}
+                />
+                <InviteFriendsPopup
+                isOpen={isInvitePopupOpen}
+                onClose={closeInvitePopup}
+                groupId={groupId} // Pass the current group ID
                 />
                     <h3>Group Tasks</h3>
                     <button className="add-task-btn" onClick={() => setIsAddTaskOpen(true) }> Add Task</button>
