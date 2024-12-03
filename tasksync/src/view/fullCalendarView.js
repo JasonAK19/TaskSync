@@ -6,6 +6,7 @@ import axios from 'axios';
 import './fullCalendarView.css';
 import Header from './components/header';
 import Sidebar from './components/sidebar';
+import DetailModal from './components/detailModal';
 
 const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) => {
   const [groupTasks, setGroupTasks] = useState([]);
@@ -15,6 +16,8 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
   const [events, setEvents] = useState([]);
   const [sharedEvents, setSharedEvents] = useState([]);
   const [groupEvents, setGroupEvents] = useState([]);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -142,6 +145,9 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
       end: endDateTime,
       className: 'group-task-event',
       extendedProps: {
+        ...task,
+        groupName: groupNames[task.groupId] || 'Unknown Group',
+        groupId: task.groupId,
         assignedTo: task.assignedTo
       }
     };
@@ -190,7 +196,7 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
   const groupEventItems = groupEvents.map(event => {
   return {
     id: event._id,
-    title: `${groupNames[event.groupId] || 'Group'}\n${event.title}`,
+    title: `[${groupNames[event.groupId] || 'Group'}] ${event.title}`,
     start: new Date(event.startDateTime).toISOString(),
     end: new Date(event.endDateTime).toISOString(),
     className: 'group-event',
@@ -200,13 +206,30 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
       isAllDay: event.isAllDay,
       reminder: event.reminder,
       reminderTime: event.reminderTime,
-      createdBy: event.createdBy
+      createdBy: event.createdBy,
+      ...event, 
+      groupName: groupNames[event.groupId],
+      groupId: event.groupId,
+      type: 'groupEvent'
     }
   };
 });
+
+
   
   const allEvents = [...ownTaskEvents, ...sharedTaskEvents, ...groupTaskEvents, ...userEvents, ...sharedEventItems, ...groupEventItems];
   console.log('All Events:', allEvents);
+
+  const handleEventClick = (clickInfo) => {
+    const eventData = clickInfo.event.extendedProps;
+    setSelectedItem({
+      ...eventData,
+      title: clickInfo.event.title,
+      start: clickInfo.event.start,
+      end: clickInfo.event.end
+    });
+    setIsModalOpen(true);
+  };
 
   const eventContent = (arg) => {
     return (
@@ -236,8 +259,18 @@ const FullCalendarView = ({ username, userInfo, onLogout, groups, setGroups }) =
             contentHeight="100%"
             eventDisplay="block"
             eventContent={eventContent}
+            eventClick={handleEventClick}
           />
         </div>
+        <DetailModal 
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedItem(null);
+        }}
+        item={selectedItem}
+        groupNames={groupNames}
+      />
       </div>
     </div>
   );

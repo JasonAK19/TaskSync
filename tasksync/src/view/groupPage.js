@@ -98,6 +98,19 @@ const GroupPage = ({username}) => {
     fetchGroupEvents();
   }, [groupId]);
 
+  useEffect(() => {
+    const fetchMessages = async () => {
+        try {
+            const response = await axios.get(`/api/groups/${groupId}/messages`);
+            setMessages(response.data);
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+    };
+    fetchMessages();
+}, [groupId]);
+
+
   /*
   const openEditTaskPopup = (task) => {
     setTaskToEdit(task);
@@ -227,39 +240,44 @@ const handleAddEvent = async (eventData) => {
 
 useEffect(() => {
   const connectWebSocket = () => {
-      ws.current = new WebSocket(`ws://localhost:8080?username=${username}`); // Pass username as a query parameter
+      ws.current = new WebSocket(`ws://localhost:8080?username=${username}`);
 
       ws.current.onopen = () => {
           console.log('WebSocket connection established');
       };
 
-      ws.current.onmessage = (event) => {
-          try {
-              const message = JSON.parse(event.data);
-              setMessages(prevMessages => {
-                  const messageExists = prevMessages.some(
-                      msg => msg.id === message.id
-                  );
-                  if (!messageExists) {
-                      return [...prevMessages, message];
-                  }
-                  return prevMessages;
-              });
-          } catch (error) {
+      ws.current.onmessage = async (event) => {
+        try {
+          let messageData;
+          
+          if (event.data instanceof Blob) {
+            const text = await event.data.text();
+            messageData = JSON.parse(text);
+          } else {
+            messageData = JSON.parse(event.data);
+          }
+      
+          if (messageData.groupId === groupId) {
+            setMessages(prevMessages => {
+              const messageExists = prevMessages.some(
+                msg => msg.id === messageData.id
+              );
+              if (!messageExists) {
+                return [...prevMessages, messageData];
+              }
+              return prevMessages;
+            });
+          }
+        }  catch (error) {
               console.warn('Error parsing message:', error);
           }
       };
 
       ws.current.onclose = () => {
           console.log('WebSocket connection closed, retrying...');
-          setTimeout(connectWebSocket, 3000); // Retry after 3 seconds
-      };
-
-      ws.current.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          setTimeout(connectWebSocket, 3000);
       };
   };
-
   connectWebSocket();
 
   return () => {
@@ -267,26 +285,32 @@ useEffect(() => {
           ws.current.close();
       }
   };
-}, [username]);
+}, [username, groupId]);
 
-const handleSendMessage = () => {
+const handleSendMessage = async () => {
   if (newMessage.trim() && ws.current?.readyState === WebSocket.OPEN) {
-      const messageData = {
-          id: Date.now() + Math.random().toString(36).substring(7), // Unique ID
-          sender: username,
-          text: newMessage.trim(),
-          timestamp: new Date().toISOString(),
-      };
+    const messageData = {
+      id: Date.now() + Math.random().toString(36).substring(7),
+      groupId: groupId,
+      sender: username,
+      text: newMessage.trim(),
+      timestamp: new Date().toISOString(),
+    };
 
-      // Send the message through WebSocket
+    try {
+      // Send as string
       ws.current.send(JSON.stringify(messageData));
-
-      // Optimistically update the chat (avoids duplication)
-      setMessages(prevMessages => [...prevMessages, messageData]);
-      setNewMessage(''); // Clear the input
+      
+      // Store in database
+      await axios.post(`/api/groups/${groupId}/messages`, messageData);
+      
+      setNewMessage('');
+    } catch (error) {
+      console.error('Error sending message:', error);
+      alert('Failed to send message');
+    }
   }
 };
-
 
     return (
         <div className="group-page">

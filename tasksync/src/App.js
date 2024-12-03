@@ -78,7 +78,7 @@ function App() {
 
                 <GroupPage username = {username}/>
               </>
-            ) : <Navigate to="/" />
+            ) : <Navigate to="/dashboard" />
           } />
          <Route path="/full-calendar" element={
             isAuthenticated ? (

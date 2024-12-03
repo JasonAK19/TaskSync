@@ -36,24 +36,41 @@ wss.on('connection', (ws, req) => {
   const username = params.get('username');
   ws.username = username;
 
-  console.log(`New client connected: ${username}`);
+  ws.on('message', async (data) => {
+    try {
+      // Convert buffer to string if needed
+      const messageStr = data instanceof Buffer ? data.toString() : data;
+      const parsedMessage = JSON.parse(messageStr);
+      
+      // Store in database
+      const messageDoc = {
+        groupId: new ObjectId(parsedMessage.groupId),
+        sender: parsedMessage.sender,
+        text: parsedMessage.text,
+        timestamp: new Date()
+      };
+      
+      await db.collection('Messages').insertOne(messageDoc);
 
-  ws.on('message', (message) => {
-      try {
-          const parsedMessage = JSON.parse(message);
+      // Broadcast as string
+      const broadcastMessage = JSON.stringify({
+        id: parsedMessage.id,
+        groupId: parsedMessage.groupId,
+        sender: parsedMessage.sender,
+        text: parsedMessage.text,
+        timestamp: new Date().toISOString()
+      });
+      
+      wss.clients.forEach(client => {
+        if (client !== ws && client.readyState === WebSocket.OPEN) {
+          client.send(broadcastMessage);
+        }
+      });
 
-          console.log(`Received message from ${username}:`, parsedMessage);
-
-          // Broadcast the message to all connected clients except the sender
-          wss.clients.forEach(client => {
-              if (client !== ws && client.readyState === WebSocket.OPEN) {
-                  client.send(message); // Send the original message
-              }
-          });
-      } catch (error) {
-          console.error('Error parsing message:', error);
-      }
-  });
+    } catch (error) {
+        console.error('Error handling message:', error);
+    }
+});
 
   ws.on('close', () => {
       console.log(`Client disconnected: ${username}`);
@@ -85,6 +102,41 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });
+});
+
+app.post('/api/groups/:groupId/messages', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { sender, text } = req.body;
+    
+    const message = {
+      groupId: new ObjectId(groupId),
+      sender,
+      text,
+      timestamp: new Date(),
+    };
+
+    const result = await db.collection('Messages').insertOne(message);
+    res.status(201).json({ messageId: result.insertedId, ...message });
+  } catch (error) {
+    console.error('Error saving message:', error);
+    res.status(500).json({ error: 'Failed to save message' });
+  }
+});
+
+// Get messages for a group
+app.get('/api/groups/:groupId/messages', async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const messages = await db.collection('Messages')
+      .find({ groupId: new ObjectId(groupId) })
+      .sort({ timestamp: 1 })
+      .toArray();
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
 });
 
 // validate email function with timeout
